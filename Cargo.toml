@@ -1,9 +1,18 @@
 [package]
-name = "dmx-rs"
+name = "dmx"
 version = "0.1.0"
 authors = ["Guilhem Saurel <guilhem.saurel@laas.fr>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+categories = [ "hardware-support", "no-std"]
+description = "Rust implementation of the Robotis Dynamixel motor protocol."
 
 [dependencies]
+crc16 = "0.4.0"
+nb = "1.0.0"
+embedded-hal = "0.2.4"
+
+cortex-m = "0.6.4"
+cortex-m-rt = "0.6.13"
+rtt-target = { version = "0.3.0", features = ["cortex-m"] }
+panic-rtt-target = { version = "0.1.1", features = ["cortex-m"] }
+stm32f1xx-hal = { version = "0.7.0", features = ["rt", "stm32f103", "medium"] }
