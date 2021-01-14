@@ -4,8 +4,8 @@ Generate getters and setters for a dynamixel motor from a control table TSV copy
 """
 
 import csv
-from subprocess import run
 from pathlib import Path
+from subprocess import run
 
 HEAD = """
 use crate::convert::*;
@@ -53,11 +53,11 @@ def generate(address, size, data_name, description, access, initial_value, *, mo
     ]
     if access == 'RW':
         lines += [
-            f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) {{',
+            f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<(), Error> {{',
             f'    let params = u{size * 8}_to_bytes(params);',
             f'    self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, ',
             ', '.join(f'params[{i}]' for i in range(size)) + ']);',
-            f'    rprintln!("set_{data_name} → {{:?}}", self.recv().ok().unwrap());}}',
+            f'    rprintln!("set_{data_name} → {{:?}}", self.recv()?); Ok(())}}',
         ]
     for line in lines:
         print(line, file=out)
