@@ -13,7 +13,7 @@ use crate::protocol::{Controller, Instruction, Protocol};
 use crate::protocol_1::Error1;
 use crate::protocol_2::Error2;
 use embedded_hal::{digital::v2::OutputPin, serial};
-use rtt_target::rprintln;
+//use rtt_target::rprintln;
 
 
 pub trait MOTOR<Error>: Protocol<Error> {
@@ -38,7 +38,7 @@ where
 """
 
 
-def generate(address, size, data_name, description, access, initial_value, *, motor, out):
+def generate(address, size, data_name, description, access, initial_value, mini=None, maxi=None, *, motor, out):
     address = (int(address) & 0xFF, int(address) >> 8)
     size = int(size)
     size_t = (size & 0xFF, size >> 8)
@@ -57,7 +57,8 @@ def generate(address, size, data_name, description, access, initial_value, *, mo
             f'    let params = u{size * 8}_to_bytes(params);',
             f'    self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, ',
             ', '.join(f'params[{i}]' for i in range(size)) + ']);',
-            f'    rprintln!("set_{data_name} → {{:?}}", self.recv()?); Ok(())}}',
+            # f'    rprintln!("set_{data_name} → {{:?}}", self.recv()?); Ok(())}}',
+            '    Ok(())}',
         ]
     for line in lines:
         print(line, file=out)

@@ -89,8 +89,11 @@ where
         let packet_id: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
         let length_l: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
         let length_h: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
-        let length: usize = length_l as usize + ((length_h as usize) << 8) - 4;
         let instruction: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
+        if instruction != Instruction::StatusReturn as u8 {
+            return Err(Error2::InstructionReceived);
+        }
+        let length: usize = length_l as usize + ((length_h as usize) << 8) - 4;
         let error: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
         let mut params = [0; PARAMS_SIZE];
         for param in params.iter_mut().take(length) {
@@ -109,9 +112,7 @@ where
         }
         let crc = crc.get();
 
-        if instruction != Instruction::StatusReturn as u8 {
-            Err(Error2::InstructionReceived)
-        } else if error != 0 {
+        if error & 0x7F != 0 {
             Err(Error2::Protocol(error.into()))
         } else if crc as u8 != crcs[0] || (crc >> 8) as u8 != crcs[1] {
             Err(Error2::CRCError)

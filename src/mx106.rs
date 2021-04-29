@@ -3,7 +3,7 @@ use crate::protocol::{Controller, Instruction, Protocol};
 use crate::protocol_1::Error1;
 use crate::protocol_2::Error2;
 use embedded_hal::{digital::v2::OutputPin, serial};
-use rtt_target::rprintln;
+//use rtt_target::rprintln;
 
 pub trait MX106<Error>: Protocol<Error> {
     /// Model Number (initial: 321)
@@ -33,7 +33,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_id(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[7, 0, params[0]]);
-        rprintln!("set_id → {:?}", self.recv()?);
         Ok(())
     }
     /// Communication Baud Rate (initial: 1)
@@ -45,7 +44,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_baud_rate(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[8, 0, params[0]]);
-        rprintln!("set_baud_rate → {:?}", self.recv()?);
         Ok(())
     }
     /// Response Delay Time (initial: 250)
@@ -57,7 +55,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_return_delay_time(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[9, 0, params[0]]);
-        rprintln!("set_return_delay_time → {:?}", self.recv()?);
         Ok(())
     }
     /// Drive Mode (initial: 0)
@@ -69,7 +66,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_drive_mode(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[10, 0, params[0]]);
-        rprintln!("set_drive_mode → {:?}", self.recv()?);
         Ok(())
     }
     /// Operating Mode (initial: 3)
@@ -81,7 +77,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_operating_mode(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[11, 0, params[0]]);
-        rprintln!("set_operating_mode → {:?}", self.recv()?);
         Ok(())
     }
     /// Secondary ID (initial: 255)
@@ -93,7 +88,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_secondary_id(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[12, 0, params[0]]);
-        rprintln!("set_secondary_id → {:?}", self.recv()?);
         Ok(())
     }
     /// Protocol Type (initial: 2)
@@ -105,7 +99,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_protocol_type(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[13, 0, params[0]]);
-        rprintln!("set_protocol_type → {:?}", self.recv()?);
         Ok(())
     }
     /// Home Position Offset (initial: 0)
@@ -121,7 +114,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[20, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_homing_offset → {:?}", self.recv()?);
         Ok(())
     }
     /// Velocity Threshold for Movement Detection (initial: 10)
@@ -137,7 +129,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[24, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_moving_threshold → {:?}", self.recv()?);
         Ok(())
     }
     /// Maximum Internal Temperature Limit (initial: 80)
@@ -149,7 +140,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_temperature_limit(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[31, 0, params[0]]);
-        rprintln!("set_temperature_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Maximum Input Voltage Limit (initial: 160)
@@ -161,7 +151,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_max_voltage_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
-        rprintln!("set_max_voltage_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Minimum Input Voltage Limit (initial: 95)
@@ -173,7 +162,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_min_voltage_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
-        rprintln!("set_min_voltage_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Maximum PWM Limit (initial: 885)
@@ -185,7 +173,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_pwm_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[36, 0, params[0], params[1]]);
-        rprintln!("set_pwm_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Maximum Current Limit (initial: 2047)
@@ -197,7 +184,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_current_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[38, 0, params[0], params[1]]);
-        rprintln!("set_current_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Maximum Acceleration Limit (initial: 32767)
@@ -213,7 +199,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[40, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_acceleration_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Maximum Velocity Limit (initial: 210)
@@ -229,7 +214,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[44, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_velocity_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Maximum Position Limit (initial: 4,095)
@@ -245,7 +229,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[48, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_max_position_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Minimum Position Limit (initial: 0)
@@ -261,7 +244,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[52, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_min_position_limit → {:?}", self.recv()?);
         Ok(())
     }
     /// Shutdown Error Information (initial: 52)
@@ -273,7 +255,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_shutdown(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[63, 0, params[0]]);
-        rprintln!("set_shutdown → {:?}", self.recv()?);
         Ok(())
     }
     /// Motor Torque On/Off (initial: 0)
@@ -285,7 +266,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_torque_enable(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[64, 0, params[0]]);
-        rprintln!("set_torque_enable → {:?}", self.recv()?);
         Ok(())
     }
     /// Status LED On/Off (initial: 0)
@@ -297,7 +277,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_led(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[65, 0, params[0]]);
-        rprintln!("set_led → {:?}", self.recv()?);
         Ok(())
     }
     /// Select Types of Status Return (initial: 2)
@@ -309,7 +288,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_status_return_level(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[68, 0, params[0]]);
-        rprintln!("set_status_return_level → {:?}", self.recv()?);
         Ok(())
     }
     /// REG_WRITE Instruction Flag (initial: 0)
@@ -333,7 +311,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_velocity_i_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[76, 0, params[0], params[1]]);
-        rprintln!("set_velocity_i_gain → {:?}", self.recv()?);
         Ok(())
     }
     /// P Gain of Velocity (initial: 100)
@@ -345,7 +322,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_velocity_p_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[78, 0, params[0], params[1]]);
-        rprintln!("set_velocity_p_gain → {:?}", self.recv()?);
         Ok(())
     }
     /// D Gain of Position (initial: 0)
@@ -357,7 +333,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_position_d_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[80, 0, params[0], params[1]]);
-        rprintln!("set_position_d_gain → {:?}", self.recv()?);
         Ok(())
     }
     /// I Gain of Position (initial: 0)
@@ -369,7 +344,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_position_i_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[82, 0, params[0], params[1]]);
-        rprintln!("set_position_i_gain → {:?}", self.recv()?);
         Ok(())
     }
     /// P Gain of Position (initial: 850)
@@ -381,7 +355,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_position_p_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[84, 0, params[0], params[1]]);
-        rprintln!("set_position_p_gain → {:?}", self.recv()?);
         Ok(())
     }
     /// 2nd Gain of Feed-Forward (initial: 0)
@@ -393,7 +366,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_feedforward_2nd_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[88, 0, params[0], params[1]]);
-        rprintln!("set_feedforward_2nd_gain → {:?}", self.recv()?);
         Ok(())
     }
     /// 1st Gain of Feed-Forward (initial: 0)
@@ -405,7 +377,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_feedforward_1st_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[90, 0, params[0], params[1]]);
-        rprintln!("set_feedforward_1st_gain → {:?}", self.recv()?);
         Ok(())
     }
     /// DYNAMIXEL BUS Watchdog (initial: 0)
@@ -417,7 +388,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_bus_watchdog(&mut self, id: u8, params: u8) -> Result<(), Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[98, 0, params[0]]);
-        rprintln!("set_bus_watchdog → {:?}", self.recv()?);
         Ok(())
     }
     /// Desired PWM Value (initial: -)
@@ -429,7 +399,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_goal_pwm(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[100, 0, params[0], params[1]]);
-        rprintln!("set_goal_pwm → {:?}", self.recv()?);
         Ok(())
     }
     /// Desired Current Value (initial: -)
@@ -441,7 +410,6 @@ pub trait MX106<Error>: Protocol<Error> {
     fn set_mx106_goal_current(&mut self, id: u8, params: u16) -> Result<(), Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[102, 0, params[0], params[1]]);
-        rprintln!("set_goal_current → {:?}", self.recv()?);
         Ok(())
     }
     /// Desired Velocity Value (initial: -)
@@ -457,7 +425,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[104, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_goal_velocity → {:?}", self.recv()?);
         Ok(())
     }
     /// Acceleration Value of Profile (initial: 0)
@@ -473,7 +440,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[108, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_profile_acceleration → {:?}", self.recv()?);
         Ok(())
     }
     /// Velocity Value of Profile (initial: 0)
@@ -489,7 +455,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[112, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_profile_velocity → {:?}", self.recv()?);
         Ok(())
     }
     /// Desired Position (initial: -)
@@ -505,7 +470,6 @@ pub trait MX106<Error>: Protocol<Error> {
             Instruction::Write,
             &[116, 0, params[0], params[1], params[2], params[3]],
         );
-        rprintln!("set_goal_position → {:?}", self.recv()?);
         Ok(())
     }
     /// Count Time in Millisecond (initial: -)

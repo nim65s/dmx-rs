@@ -7,3 +7,4 @@ pub mod protocol_2;
 
 pub mod mx106;
 pub mod mx28;
+pub mod xl320;
