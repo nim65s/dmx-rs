@@ -1,5 +1,5 @@
 use crate::convert::*;
-use crate::protocol::{Controller, Instruction, Protocol};
+use crate::protocol::{Controller, Instruction, Protocol, Response};
 use crate::protocol_1::Error1;
 use crate::protocol_2::Error2;
 use embedded_hal::{digital::v2::OutputPin, serial};
@@ -24,10 +24,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_id(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_id(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[3, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Communication Speed (initial: 3)
     fn get_xl320_baud_rate(&mut self, id: u8) -> Result<u8, Error> {
@@ -35,10 +35,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_baud_rate(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_baud_rate(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[4, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Response Delay Time (initial: 250)
     fn get_xl320_return_delay_time(&mut self, id: u8) -> Result<u8, Error> {
@@ -46,10 +46,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_return_delay_time(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_return_delay_time(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[5, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Clockwise Angle Limit (initial: 0)
     fn get_xl320_cw_angle_limit(&mut self, id: u8) -> Result<u16, Error> {
@@ -57,10 +57,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_xl320_cw_angle_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_xl320_cw_angle_limit(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[6, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Counter-Clockwise Angle Limit (initial: 1023)
     fn get_xl320_ccw_angle_limit(&mut self, id: u8) -> Result<u16, Error> {
@@ -68,10 +68,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_xl320_ccw_angle_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_xl320_ccw_angle_limit(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[8, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Control Mode (initial: 2)
     fn get_xl320_control_mode(&mut self, id: u8) -> Result<u8, Error> {
@@ -79,10 +79,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_control_mode(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_control_mode(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[11, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Maximum Internal Temperature Limit (initial: 65)
     fn get_xl320_temperature_limit(&mut self, id: u8) -> Result<u8, Error> {
@@ -90,10 +90,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_temperature_limit(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_temperature_limit(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[12, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Minimum Input Voltage Limit (initial: 60)
     fn get_xl320_min_voltage_limit(&mut self, id: u8) -> Result<u8, Error> {
@@ -101,10 +101,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_min_voltage_limit(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_min_voltage_limit(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[13, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Maximum Input Voltage Limit (initial: 90)
     fn get_xl320_max_voltage_limit(&mut self, id: u8) -> Result<u8, Error> {
@@ -112,10 +112,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_max_voltage_limit(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_max_voltage_limit(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[14, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Maximun Torque (initial: 1023)
     fn get_xl320_max_torque(&mut self, id: u8) -> Result<u16, Error> {
@@ -123,10 +123,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_xl320_max_torque(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_xl320_max_torque(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[15, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Select Types of Status Return (initial: 2)
     fn get_xl320_status_return_level(&mut self, id: u8) -> Result<u8, Error> {
@@ -134,10 +134,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_status_return_level(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_status_return_level(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[17, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Shutdown Error Information (initial: 3)
     fn get_xl320_shutdown(&mut self, id: u8) -> Result<u8, Error> {
@@ -145,10 +145,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_shutdown(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_shutdown(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[18, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Motor Torque On/Off (initial: 0)
     fn get_xl320_torque_enable(&mut self, id: u8) -> Result<u8, Error> {
@@ -156,10 +156,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_torque_enable(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_torque_enable(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[24, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Status LED On/Off (initial: 0)
     fn get_xl320_led(&mut self, id: u8) -> Result<u8, Error> {
@@ -167,10 +167,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_led(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_led(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[25, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Derivative Gain (initial: 0)
     fn get_xl320_d_gain(&mut self, id: u8) -> Result<u8, Error> {
@@ -178,10 +178,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_d_gain(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_d_gain(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[27, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Integral Gain (initial: 0)
     fn get_xl320_i_gain(&mut self, id: u8) -> Result<u8, Error> {
@@ -189,10 +189,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_i_gain(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_i_gain(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[28, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Proportional Gain (initial: 32)
     fn get_xl320_p_gain(&mut self, id: u8) -> Result<u8, Error> {
@@ -200,10 +200,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_xl320_p_gain(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_xl320_p_gain(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[29, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Desired Position (initial: -)
     fn get_xl320_goal_position(&mut self, id: u8) -> Result<u16, Error> {
@@ -211,10 +211,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_xl320_goal_position(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_xl320_goal_position(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[30, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Moving Speed(Moving Velocity) (initial: -)
     fn get_xl320_moving_speed(&mut self, id: u8) -> Result<u16, Error> {
@@ -222,10 +222,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_xl320_moving_speed(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_xl320_moving_speed(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Torque Limit (initial: -)
     fn get_xl320_torque_limit(&mut self, id: u8) -> Result<u16, Error> {
@@ -233,10 +233,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_xl320_torque_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_xl320_torque_limit(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[35, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Present Position (initial: -)
     fn get_xl320_present_position(&mut self, id: u8) -> Result<u16, Error> {
@@ -292,10 +292,10 @@ pub trait XL320<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_xl320_punch(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_xl320_punch(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[51, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
 }
 

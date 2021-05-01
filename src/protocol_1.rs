@@ -1,6 +1,7 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol1>
 
 use crate::protocol::*;
+use core::fmt;
 use embedded_hal::{digital::v2::OutputPin, serial};
 use nb::block;
 
@@ -13,6 +14,18 @@ where
     Communication(<Serial as serial::Read<u8>>::Error),
     Protocol(u8),
     ChecksumError,
+}
+
+impl<Serial> fmt::Debug for Error1<Serial>
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            Error1::Communication(_) => f.write_str("Serial read error"),
+            e => f.write_fmt(format_args!("{:?}", e)),
+        }
+    }
 }
 
 impl<Serial, Direction> Protocol<Error1<Serial>> for Controller<Serial, Direction, Error1<Serial>>

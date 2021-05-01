@@ -1,7 +1,7 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol2>
 
 use crate::protocol::*;
-use core::convert::Into;
+use core::{convert::Into, fmt};
 use embedded_hal::{digital::v2::OutputPin, serial};
 use nb::block;
 
@@ -42,6 +42,18 @@ where
     Protocol(Status),
     CRCError,
     InstructionReceived,
+}
+
+impl<Serial> fmt::Debug for Error2<Serial>
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            Error2::Communication(_) => f.write_str("Serial read error"),
+            e => f.write_fmt(format_args!("{:?}", e)),
+        }
+    }
 }
 
 impl<Serial, Direction> Protocol<Error2<Serial>> for Controller<Serial, Direction, Error2<Serial>>

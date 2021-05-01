@@ -1,5 +1,5 @@
 use crate::convert::*;
-use crate::protocol::{Controller, Instruction, Protocol};
+use crate::protocol::{Controller, Instruction, Protocol, Response};
 use crate::protocol_1::Error1;
 use crate::protocol_2::Error2;
 use embedded_hal::{digital::v2::OutputPin, serial};
@@ -30,10 +30,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_id(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_id(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[7, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Communication Baud Rate (initial: 1)
     fn get_mx28_baud_rate(&mut self, id: u8) -> Result<u8, Error> {
@@ -41,10 +41,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_baud_rate(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_baud_rate(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[8, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Response Delay Time (initial: 250)
     fn get_mx28_return_delay_time(&mut self, id: u8) -> Result<u8, Error> {
@@ -52,10 +52,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_return_delay_time(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_return_delay_time(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[9, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Drive Mode (initial: 0)
     fn get_mx28_drive_mode(&mut self, id: u8) -> Result<u8, Error> {
@@ -63,10 +63,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_drive_mode(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_drive_mode(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[10, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Operating Mode (initial: 3)
     fn get_mx28_operating_mode(&mut self, id: u8) -> Result<u8, Error> {
@@ -74,10 +74,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_operating_mode(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_operating_mode(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[11, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Secondary ID (initial: 255)
     fn get_mx28_secondary_id(&mut self, id: u8) -> Result<u8, Error> {
@@ -85,10 +85,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_secondary_id(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_secondary_id(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[12, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Protocol Type (initial: 2)
     fn get_mx28_protocol_type(&mut self, id: u8) -> Result<u8, Error> {
@@ -96,10 +96,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_protocol_type(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_protocol_type(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[13, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Home Position Offset (initial: 0)
     fn get_mx28_homing_offset(&mut self, id: u8) -> Result<u32, Error> {
@@ -107,14 +107,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_homing_offset(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_homing_offset(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[20, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Velocity Threshold for Movement Detection (initial: 10)
     fn get_mx28_moving_threshold(&mut self, id: u8) -> Result<u32, Error> {
@@ -122,14 +122,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_moving_threshold(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_moving_threshold(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[24, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Maximum Internal Temperature Limit (initial: 80)
     fn get_mx28_temperature_limit(&mut self, id: u8) -> Result<u8, Error> {
@@ -137,10 +137,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_temperature_limit(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_temperature_limit(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[31, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Maximum Input Voltage Limit (initial: 160)
     fn get_mx28_max_voltage_limit(&mut self, id: u8) -> Result<u16, Error> {
@@ -148,10 +148,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_max_voltage_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_max_voltage_limit(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Minimum Input Voltage Limit (initial: 95)
     fn get_mx28_min_voltage_limit(&mut self, id: u8) -> Result<u16, Error> {
@@ -159,10 +159,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_min_voltage_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_min_voltage_limit(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Maximum PWM Limit (initial: 885)
     fn get_mx28_pwm_limit(&mut self, id: u8) -> Result<u16, Error> {
@@ -170,10 +170,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_pwm_limit(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_pwm_limit(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[36, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Maximum Acceleration Limit (initial: 32767)
     fn get_mx28_acceleration_limit(&mut self, id: u8) -> Result<u32, Error> {
@@ -181,14 +181,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_acceleration_limit(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_acceleration_limit(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[40, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Maximum Velocity Limit (initial: 230)
     fn get_mx28_velocity_limit(&mut self, id: u8) -> Result<u32, Error> {
@@ -196,14 +196,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_velocity_limit(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_velocity_limit(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[44, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Maximum Position Limit (initial: 4,095)
     fn get_mx28_max_position_limit(&mut self, id: u8) -> Result<u32, Error> {
@@ -211,14 +211,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_max_position_limit(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_max_position_limit(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[48, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Minimum Position Limit (initial: 0)
     fn get_mx28_min_position_limit(&mut self, id: u8) -> Result<u32, Error> {
@@ -226,14 +226,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_min_position_limit(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_min_position_limit(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[52, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Shutdown Error Information (initial: 52)
     fn get_mx28_shutdown(&mut self, id: u8) -> Result<u8, Error> {
@@ -241,10 +241,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_shutdown(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_shutdown(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[63, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Motor Torque On/Off (initial: 0)
     fn get_mx28_torque_enable(&mut self, id: u8) -> Result<u8, Error> {
@@ -252,10 +252,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_torque_enable(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_torque_enable(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[64, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Status LED On/Off (initial: 0)
     fn get_mx28_led(&mut self, id: u8) -> Result<u8, Error> {
@@ -263,10 +263,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_led(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_led(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[65, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Select Types of Status Return (initial: 2)
     fn get_mx28_status_return_level(&mut self, id: u8) -> Result<u8, Error> {
@@ -274,10 +274,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_status_return_level(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_status_return_level(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[68, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// REG_WRITE Instruction Flag (initial: 0)
     fn get_mx28_registered_instruction(&mut self, id: u8) -> Result<u8, Error> {
@@ -297,10 +297,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_velocity_i_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_velocity_i_gain(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[76, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// P Gain of Velocity (initial: 100)
     fn get_mx28_velocity_p_gain(&mut self, id: u8) -> Result<u16, Error> {
@@ -308,10 +308,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_velocity_p_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_velocity_p_gain(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[78, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// D Gain of Position (initial: 0)
     fn get_mx28_position_d_gain(&mut self, id: u8) -> Result<u16, Error> {
@@ -319,10 +319,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_position_d_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_position_d_gain(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[80, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// I Gain of Position (initial: 0)
     fn get_mx28_position_i_gain(&mut self, id: u8) -> Result<u16, Error> {
@@ -330,10 +330,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_position_i_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_position_i_gain(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[82, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// P Gain of Position (initial: 850)
     fn get_mx28_position_p_gain(&mut self, id: u8) -> Result<u16, Error> {
@@ -341,10 +341,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_position_p_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_position_p_gain(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[84, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// 2nd Gain of Feed-Forward (initial: 0)
     fn get_mx28_feedforward_2nd_gain(&mut self, id: u8) -> Result<u16, Error> {
@@ -352,10 +352,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_feedforward_2nd_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_feedforward_2nd_gain(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[88, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// 1st Gain of Feed-Forward (initial: 0)
     fn get_mx28_feedforward_1st_gain(&mut self, id: u8) -> Result<u16, Error> {
@@ -363,10 +363,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_feedforward_1st_gain(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_feedforward_1st_gain(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[90, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// DYNAMIXEL BUS Watchdog (initial: 0)
     fn get_mx28_bus_watchdog(&mut self, id: u8) -> Result<u8, Error> {
@@ -374,10 +374,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_bus_watchdog(&mut self, id: u8, params: u8) -> Result<(), Error> {
+    fn set_mx28_bus_watchdog(&mut self, id: u8, params: u8) -> Result<Response, Error> {
         let params = u8_to_bytes(params);
         self.send(id, Instruction::Write, &[98, 0, params[0]]);
-        Ok(())
+        self.recv()
     }
     /// Desired PWM Value (initial: -)
     fn get_mx28_goal_pwm(&mut self, id: u8) -> Result<u16, Error> {
@@ -385,10 +385,10 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_goal_pwm(&mut self, id: u8, params: u16) -> Result<(), Error> {
+    fn set_mx28_goal_pwm(&mut self, id: u8, params: u16) -> Result<Response, Error> {
         let params = u16_to_bytes(params);
         self.send(id, Instruction::Write, &[100, 0, params[0], params[1]]);
-        Ok(())
+        self.recv()
     }
     /// Desired Velocity Value (initial: -)
     fn get_mx28_goal_velocity(&mut self, id: u8) -> Result<u32, Error> {
@@ -396,14 +396,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_goal_velocity(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_goal_velocity(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[104, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Acceleration Value of Profile (initial: 0)
     fn get_mx28_profile_acceleration(&mut self, id: u8) -> Result<u32, Error> {
@@ -411,14 +411,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_profile_acceleration(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_profile_acceleration(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[108, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Velocity Value of Profile (initial: 0)
     fn get_mx28_profile_velocity(&mut self, id: u8) -> Result<u32, Error> {
@@ -426,14 +426,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_profile_velocity(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_profile_velocity(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[112, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Desired Position (initial: -)
     fn get_mx28_goal_position(&mut self, id: u8) -> Result<u32, Error> {
@@ -441,14 +441,14 @@ pub trait MX28<Error>: Protocol<Error> {
         let params = self.recv()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx28_goal_position(&mut self, id: u8, params: u32) -> Result<(), Error> {
+    fn set_mx28_goal_position(&mut self, id: u8, params: u32) -> Result<Response, Error> {
         let params = u32_to_bytes(params);
         self.send(
             id,
             Instruction::Write,
             &[116, 0, params[0], params[1], params[2], params[3]],
         );
-        Ok(())
+        self.recv()
     }
     /// Count Time in Millisecond (initial: -)
     fn get_mx28_realtime_tick(&mut self, id: u8) -> Result<u16, Error> {
