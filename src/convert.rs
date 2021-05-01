@@ -27,6 +27,14 @@ pub fn bytes_to_u32(data: &[u8]) -> u32 {
     data[0] as u32 + ((data[1] as u32) << 8) + ((data[2] as u32) << 16) + ((data[3] as u32) << 24)
 }
 
+pub fn distance_u16(a: u16, b: u16) -> u16 {
+    if a >= b {
+        a - b
+    } else {
+        b - a
+    }
+}
+
 pub fn distance_u32(a: u32, b: u32) -> u32 {
     if a >= b {
         a - b
