@@ -84,16 +84,16 @@ def protocol_2(data):
 
 class Debug:
     def __init__(self):
-        self.serial = AioSerial(port='/dev/ttyACM0', baudrate=1_000_000)
+        self.serial = AioSerial(port='/dev/ttyACM0', baudrate=115_200)
 
     async def write(self):
         while True:
             data = await ainput()
             data = [int(i, base=16) & 0xFF for i in data.split()]
             if data[0] == 1:
-                data = protocol_1(data)
+                data = protocol_1(data[1:])
             elif data[0] == 2:
-                data = protocol_2(data)
+                data = protocol_2(data[1:])
             await self.serial.write_async(data)
 
     async def read(self):

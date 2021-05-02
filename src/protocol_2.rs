@@ -39,7 +39,6 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
 {
     Communication(<Serial as serial::Read<u8>>::Error),
-    Protocol(Status),
     CRCError,
     InstructionReceived,
 }
@@ -61,6 +60,12 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
+    fn protocol_version(&self) -> u8 {
+        2
+    }
+    fn n_recv(&self) -> u8 {
+        self.n_recv
+    }
     fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]) {
         let content = [
             id,
@@ -124,15 +129,14 @@ where
         }
         let crc = crc.get();
 
-        if error & 0x7F != 0 {
-            Err(Error2::Protocol(error.into()))
-        } else if crc as u8 != crcs[0] || (crc >> 8) as u8 != crcs[1] {
+        if crc as u8 != crcs[0] || (crc >> 8) as u8 != crcs[1] {
             Err(Error2::CRCError)
         } else {
             Ok(Response {
                 packet_id,
                 length,
                 params,
+                error,
             })
         }
     }
@@ -146,7 +150,8 @@ where
     pub fn new_2(
         serial: Serial,
         direction: Direction,
+        n_recv: u8,
     ) -> Controller<Serial, Direction, Error2<Serial>> {
-        Controller::new(serial, direction)
+        Controller::new(serial, direction, n_recv)
     }
 }

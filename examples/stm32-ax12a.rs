@@ -4,24 +4,36 @@
 
 /*
  * In this example, we short-circuit RX & TX, and plug this to the DATA half-duplex port.
- * We don't receive sent packets, and that's actually a good thing, but I don't know why.
  * A no-op zero-cost Dummy direction pin is provided to the controller.
+ * The AX12A can't drive the DATA bus versus the STM32 PushPull on PA9, so this is write-only,
+ * and the controller is configured to expect 0 Response after set commands
  *
  * the AX12A has the following configuration: Protocol 1, Baudrate: 115_200, device ID: 1
  */
 
 use cortex_m_rt::entry;
-use dmx::{
-    ax12a::AX12A,
-    convert::distance_u16,
-    protocol::{Controller, Instruction, Protocol},
-    protocol_1::Error1,
-};
+use dmx::{ax12a::AX12A, protocol::Controller};
 use dummy_pin::DummyPin;
 use nb::block;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
-use stm32f1xx_hal::{pac, prelude::*, serial, timer::Timer};
+use stm32f1xx_hal::{
+    pac,
+    prelude::*,
+    serial,
+    timer::{CountDownTimer, Timer},
+};
+
+fn sleep_ms(timer: &mut CountDownTimer<pac::SYST>, ms: usize) {
+    timer.reset();
+    block!(timer.wait()).unwrap();
+
+    for _ in 0..ms {
+        block!(timer.wait()).unwrap();
+    }
+
+    block!(timer.wait()).unwrap();
+}
 
 #[entry]
 fn main() -> ! {
@@ -54,89 +66,55 @@ fn main() -> ! {
         clocks,
         &mut rcc.apb2,
     );
-    let mut dmx = Controller::new_1(serial, dummy_pin);
+    let mut dmx = Controller::new_1(serial, dummy_pin, 0);
+    sleep_ms(&mut timer, 500);
 
-    rprintln!("ping {:?}", dmx.send(1, Instruction::Ping, &[]));
-    match dmx.recv() {
-        Ok(resp) => rprintln!("Ok received {:?}", resp),
-        Err(Error1::Communication(_)) => rprintln!("Err communication error"),
-        Err(Error1::Protocol(status)) => rprintln!("Err protocol error: {:?}", status),
-        Err(Error1::ChecksumError) => rprintln!("Err checksum error"),
+    for led in 0..6 {
+        match dmx.set_ax12a_led(1, led % 2) {
+            Err(e) => rprintln!("set led to {} err: {:?}", led % 2, e),
+            Ok(_) => rprintln!("set led to {} ok", led % 2),
+        }
+        sleep_ms(&mut timer, 500);
     }
 
-    for led in 0..10 {
-        rprintln!("set led to {}", led % 2);
-        if let Err(_) = dmx.set_ax12a_led(1, led % 2) {
-            rprintln!("error setting led");
-        }
-        timer.reset();
-        block!(timer.wait()).unwrap();
+    match dmx.set_ax12a_torque_enable(1, 1) {
+        Err(e) => rprintln!("enable torque err: {:?}", e),
+        Ok(_) => rprintln!("enable torque ok"),
+    }
 
-        for _ in 0..1000 {
-            block!(timer.wait()).unwrap();
-        }
+    match dmx.set_ax12a_moving_speed(1, 00) {
+        Err(e) => rprintln!("set moving speed err: {:?}", e),
+        Ok(_) => rprintln!("set moving speed ok"),
+    }
 
-        block!(timer.wait()).unwrap();
+    for goal in 0..8 {
+        match dmx.set_ax12a_goal_position(1, goal * 127) {
+            Err(e) => rprintln!("set goal position {} err: {:?}", goal, e),
+            Ok(_) => rprintln!("set goal position {} ok", goal),
+        }
+        sleep_ms(&mut timer, 1000);
+    }
+
+    for goal in 0..=8 {
+        match dmx.set_ax12a_goal_position(1, (8 - goal) * 127) {
+            Err(e) => rprintln!("set goal position {} err: {:?}", 8 - goal, e),
+            Ok(_) => rprintln!("set goal position {} ok", 8 - goal),
+        }
+        sleep_ms(&mut timer, 1000);
+    }
+
+    match dmx.set_ax12a_torque_enable(1, 0) {
+        Err(e) => rprintln!("disable torque err: {:?}", e),
+        Ok(_) => rprintln!("disable torque ok"),
     }
 
     loop {
-        rprintln!("ping {}", dmx.ping(1));
-        rprintln!(
-            "torque enable {}",
-            dmx.get_ax12a_torque_enable(1).ok().unwrap()
-        );
-        rprintln!(
-            "present position {}",
-            dmx.get_ax12a_present_position(1).ok().unwrap()
-        );
-        rprintln!(
-            "goal position {}",
-            dmx.get_ax12a_goal_position(1).ok().unwrap()
-        );
-        dmx.set_ax12a_torque_enable(1, 1)
-            .map_err(|e| rprintln!("set torque enable err: {:?}", e))
-            .ok();
-        dmx.set_ax12a_led(1, 1)
-            .map_err(|e| rprintln!("set led err: {:?}", e))
-            .ok();
-
-        //let goal: u16 = 100;
-        let goal: u16 = 8000;
-
-        dmx.set_ax12a_goal_position(1, goal)
-            .map_err(|e| rprintln!("set goal position: {:?}", e))
-            .ok();
-
-        while distance_u16(goal, dmx.get_ax12a_present_position(1).ok().unwrap()) > 10 {
-            block!(timer.wait()).unwrap();
+        for led in 0..2 {
+            match dmx.set_ax12a_led(1, led % 2) {
+                Err(e) => rprintln!("set led to {} err: {:?}", led % 2, e),
+                Ok(_) => rprintln!("set led to {} ok", led % 2),
+            }
+            sleep_ms(&mut timer, 100);
         }
-
-        dmx.set_ax12a_torque_enable(1, 0)
-            .map_err(|e| rprintln!("set torque enable err: {:?}", e))
-            .ok();
-        dmx.set_ax12a_led(1, 0)
-            .map_err(|e| rprintln!("set led err: {:?}", e))
-            .ok();
-        rprintln!(
-            "torque enable {}",
-            dmx.get_ax12a_torque_enable(1).ok().unwrap()
-        );
-        rprintln!(
-            "present position {}",
-            dmx.get_ax12a_present_position(1).ok().unwrap()
-        );
-        rprintln!(
-            "goal position {}",
-            dmx.get_ax12a_goal_position(1).ok().unwrap()
-        );
-
-        timer.reset();
-        block!(timer.wait()).unwrap();
-
-        for _ in 0..1000 {
-            block!(timer.wait()).unwrap();
-        }
-
-        block!(timer.wait()).unwrap();
     }
 }

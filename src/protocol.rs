@@ -24,6 +24,7 @@ pub enum Instruction {
 pub struct Controller<Serial, Direction, Error> {
     pub serial: Serial,
     pub direction: Direction,
+    pub n_recv: u8,
     error: PhantomData<Error>,
 }
 
@@ -32,6 +33,7 @@ pub struct Response {
     pub packet_id: u8,
     pub length: usize,
     pub params: [u8; PARAMS_SIZE],
+    pub error: u8,
 }
 
 impl<Serial, Direction, Error> Controller<Serial, Direction, Error>
@@ -39,10 +41,15 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    pub fn new(serial: Serial, direction: Direction) -> Controller<Serial, Direction, Error> {
+    pub fn new(
+        serial: Serial,
+        direction: Direction,
+        n_recv: u8,
+    ) -> Controller<Serial, Direction, Error> {
         Controller {
             serial,
             direction,
+            n_recv,
             error: PhantomData,
         }
     }
@@ -51,6 +58,8 @@ where
 pub trait Protocol<Error> {
     fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]);
     fn recv(&mut self) -> Result<Response, Error>;
+    fn protocol_version(&self) -> u8;
+    fn n_recv(&self) -> u8;
 
     fn ping(&mut self, id: u8) -> bool {
         self.send(id, Instruction::Ping, &[]);
