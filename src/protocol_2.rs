@@ -11,7 +11,7 @@ const HEADER: [u8; 4] = [0xFF, 0xFF, 0xFD, 0x00];
 pub enum Status {
     ResultFail = 0x01,       // Failed to process the sent Instruction Packet
     InstructionError = 0x02, // Undefined Instruction has been used / Action has been used without Reg Write
-    CRCError = 0x03,         // CRC of the sent Packet does not match
+    CrcError = 0x03,         // CRC of the sent Packet does not match
     DataRangeError = 0x04, // Data to be written in the corresponding Address is outside the range of the minimum/maximum value
     DataLengthError = 0x05, // Attempt to write Data that is shorter than the data length of the corresponding Address (ex: when you attempt to only use 2 bytes of a item that has been defined as 4 bytes)
     DataLimitError = 0x06, // Data to be written in the corresponding Address is outside of the Limit value
@@ -24,7 +24,7 @@ impl Into<Status> for u8 {
         match self {
             0x01 => Status::ResultFail,
             0x02 => Status::InstructionError,
-            0x03 => Status::CRCError,
+            0x03 => Status::CrcError,
             0x04 => Status::DataRangeError,
             0x05 => Status::DataLengthError,
             0x06 => Status::DataLimitError,
@@ -39,7 +39,7 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
 {
     Communication(<Serial as serial::Read<u8>>::Error),
-    CRCError,
+    CrcError,
     InstructionReceived,
 }
 
@@ -130,7 +130,7 @@ where
         let crc = crc.get();
 
         if crc as u8 != crcs[0] || (crc >> 8) as u8 != crcs[1] {
-            Err(Error2::CRCError)
+            Err(Error2::CrcError)
         } else {
             Ok(Response {
                 packet_id,
