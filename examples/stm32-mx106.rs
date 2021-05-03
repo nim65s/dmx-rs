@@ -50,6 +50,8 @@ fn main() -> ! {
     );
     let mut dmx = Controller::new_2(serial, dir, 1);
 
+    let mut i = false;
+
     loop {
         rprintln!("ping {}", dmx.ping(1));
         rprintln!("torque enable {:?}", dmx.get_mx106_torque_enable(id));
@@ -65,7 +67,8 @@ fn main() -> ! {
             .map_err(|e| rprintln!("set led err: {:?}", e))
             .ok();
 
-        let goal: u32 = 3000;
+        let goal: u32 = if i { 3000 } else { 2000 };
+        i = !i;
 
         if let Err(e) = dmx.set_mx106_velocity_limit(id, 1) {
             rprintln!("set velocity limit error: {:?}", e);
