@@ -12,10 +12,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[0, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Firmware Version (initial: -)
@@ -25,10 +22,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[2, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// DYNAMIXEL ID (initial: 1)
@@ -38,24 +32,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[3, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_ax12a_id(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_ax12a_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[3, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[3, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -67,24 +55,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[4, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_ax12a_baud_rate(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_ax12a_baud_rate(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[4, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[4, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -96,28 +78,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[5, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_return_delay_time(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[5, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[5, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -129,24 +105,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[6, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_ax12a_cw_angle_limit(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_ax12a_cw_angle_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[6, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[6, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -158,28 +132,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[8, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_ax12a_ccw_angle_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[8, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[8, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -191,28 +159,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[11, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_temperature_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[11, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[11, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -224,28 +186,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[12, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_min_voltage_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[12, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[12, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -257,28 +213,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[13, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_max_voltage_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[13, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[13, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -290,24 +240,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[14, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_ax12a_max_torque(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_ax12a_max_torque(&mut self, id: u8, params: u16) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[14, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[14, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -319,28 +263,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[16, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_status_return_level(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[16, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[16, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -352,24 +290,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[17, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_ax12a_alarm_led(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_ax12a_alarm_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[17, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[17, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -381,24 +313,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[18, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_ax12a_shutdown(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_ax12a_shutdown(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[18, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[18, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -410,24 +336,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[24, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_ax12a_torque_enable(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_ax12a_torque_enable(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[24, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[24, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -439,24 +363,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[25, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_ax12a_led(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_ax12a_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[25, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[25, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -468,28 +386,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[26, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_cw_compliance_margin(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[26, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[26, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -501,28 +413,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[27, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_ccw_compliance_margin(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[27, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[27, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -534,28 +440,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[28, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_cw_compliance_slope(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[28, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[28, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -567,28 +467,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[29, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_ax12a_ccw_compliance_slope(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[29, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[29, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -600,24 +494,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[30, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_ax12a_goal_position(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_ax12a_goal_position(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[30, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[30, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -629,24 +521,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[32, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_ax12a_moving_speed(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_ax12a_moving_speed(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[32, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -658,24 +548,22 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[34, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_ax12a_torque_limit(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_ax12a_torque_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[34, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -687,10 +575,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[36, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Present Speed (initial: -)
@@ -700,10 +585,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[38, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Present Load (initial: -)
@@ -713,10 +595,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[40, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Present Voltage (initial: -)
@@ -726,10 +605,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[42, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// Present Temperature (initial: -)
@@ -739,10 +615,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[43, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// If Instruction is registered (initial: 0)
@@ -752,10 +625,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[44, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// Movement Status (initial: 0)
@@ -765,10 +635,7 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[46, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// Locking EEPROM (initial: 0)
@@ -778,24 +645,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[47, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_ax12a_lock(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_ax12a_lock(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[47, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[47, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -807,24 +668,18 @@ pub trait AX12A<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[48, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_ax12a_punch(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_ax12a_punch(&mut self, id: u8, params: u16) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[48, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[48, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }

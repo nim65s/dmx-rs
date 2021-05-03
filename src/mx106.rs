@@ -12,10 +12,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[0, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Model Information (initial: -)
@@ -25,10 +22,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[2, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     /// Firmware Version (initial: -)
@@ -38,10 +32,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[6, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// DYNAMIXEL ID (initial: 1)
@@ -51,24 +42,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[7, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_id(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[7, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[7, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -80,24 +65,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[8, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_baud_rate(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_baud_rate(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[8, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[8, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -109,28 +88,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[9, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_mx106_return_delay_time(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[9, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[9, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -142,24 +115,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[10, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_drive_mode(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_drive_mode(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[10, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[10, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -171,24 +138,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[11, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_operating_mode(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_operating_mode(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[11, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[11, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -200,24 +165,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[12, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_secondary_id(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_secondary_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[12, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[12, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -229,24 +188,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[13, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_protocol_type(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_protocol_type(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[13, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[13, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -258,13 +215,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[20, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx106_homing_offset(&mut self, id: u8, params: u32) -> Result<Option<Response>, Error> {
+    fn set_mx106_homing_offset(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -279,11 +237,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[20, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -295,17 +250,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[24, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     fn set_mx106_moving_threshold(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -320,11 +272,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[24, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -336,28 +285,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[31, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_mx106_temperature_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[31, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[31, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -369,28 +312,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[32, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_max_voltage_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[32, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -402,28 +339,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[34, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_min_voltage_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[34, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -435,24 +366,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[36, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx106_pwm_limit(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_mx106_pwm_limit(&mut self, id: u8, params: u16) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[36, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[36, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -464,24 +389,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[38, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx106_current_limit(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_mx106_current_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[38, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[38, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -493,17 +416,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[40, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     fn set_mx106_acceleration_limit(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -518,11 +438,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[40, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -534,13 +451,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[44, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx106_velocity_limit(&mut self, id: u8, params: u32) -> Result<Option<Response>, Error> {
+    fn set_mx106_velocity_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -555,11 +473,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[44, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -571,17 +486,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[48, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     fn set_mx106_max_position_limit(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -596,11 +508,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[48, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -612,17 +521,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[52, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     fn set_mx106_min_position_limit(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -637,11 +543,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[52, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -653,24 +556,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[63, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_shutdown(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_shutdown(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[63, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[63, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -682,24 +579,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[64, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_torque_enable(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_torque_enable(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[64, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[64, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -711,24 +606,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[65, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_led(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[65, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[65, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -740,28 +629,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[68, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     fn set_mx106_status_return_level(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[68, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[68, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -773,10 +656,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[69, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// Hardware Error Status (initial: 0)
@@ -786,10 +666,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[70, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// I Gain of Velocity (initial: 1920)
@@ -799,28 +676,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[76, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_velocity_i_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[76, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[76, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -832,28 +703,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[78, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_velocity_p_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[78, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[78, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -865,28 +730,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[80, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_position_d_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[80, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[80, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -898,28 +757,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[82, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_position_i_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[82, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[82, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -931,28 +784,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[84, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_position_p_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[84, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[84, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -964,28 +811,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[88, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_feedforward_2nd_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[88, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[88, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -997,28 +838,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[90, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     fn set_mx106_feedforward_1st_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[90, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[90, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -1030,24 +865,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[98, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx106_bus_watchdog(&mut self, id: u8, params: u8) -> Result<Option<Response>, Error> {
+    fn set_mx106_bus_watchdog(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
         let params = u8_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[98, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[98, 0, params[0]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<1>()?))
         } else {
             Ok(None)
         }
@@ -1059,24 +888,18 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[100, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx106_goal_pwm(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_mx106_goal_pwm(&mut self, id: u8, params: u16) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[100, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[100, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -1088,24 +911,22 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[102, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx106_goal_current(&mut self, id: u8, params: u16) -> Result<Option<Response>, Error> {
+    fn set_mx106_goal_current(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Error> {
         let params = u16_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(id, Instruction::Write, &[102, params[0], params[1]]);
         } else {
             self.send(id, Instruction::Write, &[102, 0, params[0], params[1]]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<2>()?))
         } else {
             Ok(None)
         }
@@ -1117,13 +938,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[104, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx106_goal_velocity(&mut self, id: u8, params: u32) -> Result<Option<Response>, Error> {
+    fn set_mx106_goal_velocity(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -1138,11 +960,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[104, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -1154,17 +973,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[108, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     fn set_mx106_profile_acceleration(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -1179,11 +995,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[108, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -1195,17 +1008,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[112, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     fn set_mx106_profile_velocity(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response>, Error> {
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -1220,11 +1030,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[112, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -1236,13 +1043,14 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[116, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
-    fn set_mx106_goal_position(&mut self, id: u8, params: u32) -> Result<Option<Response>, Error> {
+    fn set_mx106_goal_position(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Error> {
         let params = u32_to_bytes(params);
         if self.protocol_version() == 1 {
             self.send(
@@ -1257,11 +1065,8 @@ pub trait MX106<Error>: Protocol<Error> {
                 &[116, 0, params[0], params[1], params[2], params[3]],
             );
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
         if self.n_recv() >= 1 {
-            Ok(Some(self.recv()?))
+            Ok(Some(self.recv::<4>()?))
         } else {
             Ok(None)
         }
@@ -1273,10 +1078,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[120, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Movement Flag (initial: 0)
@@ -1286,10 +1088,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[122, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// Detailed Information of Movement Status (initial: 0)
@@ -1299,10 +1098,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[123, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
     /// Present PWM Value (initial: -)
@@ -1312,10 +1108,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[124, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Present Current Value (initial: -)
@@ -1325,10 +1118,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[126, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Present Velocity Value (initial: -)
@@ -1338,10 +1128,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[128, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     /// Present Position Value (initial: -)
@@ -1351,10 +1138,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[132, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     /// Desired Velocity Trajectory from Profile (initial: -)
@@ -1364,10 +1148,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[136, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     /// Desired Position Trajectory from Profile (initial: -)
@@ -1377,10 +1158,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[140, 0, 4, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
     /// Present Input Voltage (initial: -)
@@ -1390,10 +1168,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[144, 0, 2, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
     /// Present Internal Temperature (initial: -)
@@ -1403,10 +1178,7 @@ pub trait MX106<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[146, 0, 1, 0]);
         }
-        if self.n_recv() == 2 {
-            self.recv()?;
-        }
-        let params = self.recv()?.params;
+        let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
 }

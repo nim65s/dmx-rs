@@ -55,7 +55,7 @@ where
         self.direction.set_low().ok();
     }
 
-    fn recv(&mut self) -> Result<Response, Error1<Serial>> {
+    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error1<Serial>> {
         // wait for HEADER
         let mut head = 0;
         loop {

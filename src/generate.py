@@ -50,20 +50,23 @@ def generate(address, size, data_name, description, access, initial_value, mini=
         '    } else {'
         f'        self.send(id, Instruction::Read, &[{address[0]}, {address[1]}, {size_t[0]}, {size_t[1]}]);',
         '    }'
-        '    if self.n_recv() == 2 { self.recv()?; }'
-        '    let params = self.recv()?.params;',
+        # '    if self.n_recv() == 2 { self.recv()?; }'
+        f'    let params = self.recv::<{size}>()?.params;',
         f'    Ok(bytes_to_u{size * 8}(&params))',
         '}',
     ]
     if access == 'RW':
         params = ', '.join(f'params[{i}]' for i in range(size))
         lines += [
-            f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response>, Error> {{',
-            f'    let params = u{size * 8}_to_bytes(params);', '    if self.protocol_version() == 1 {',
-            f'        self.send(id, Instruction::Write, &[{address[0]}, {params}]);', '    } else {',
-            f'        self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, {params}]);', '    }',
-            '    if self.n_recv() == 2 { self.recv()?; }'
-            '    if self.n_recv() >= 1 { Ok(Some(self.recv()?)) } else { Ok(None) }}'
+            f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Error> {{',
+            f'    let params = u{size * 8}_to_bytes(params);',
+            '    if self.protocol_version() == 1 {',
+            f'        self.send(id, Instruction::Write, &[{address[0]}, {params}]);',
+            '    } else {',
+            f'        self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, {params}]);',
+            '    }',
+            # '    if self.n_recv() == 2 { self.recv()?; }'
+            f'    if self.n_recv() >= 1 {{ Ok(Some(self.recv::<{size}>()?)) }} else {{ Ok(None) }}}}'
         ]
     for line in lines:
         print(line, file=out)

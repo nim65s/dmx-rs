@@ -1,8 +1,6 @@
 use core::marker::PhantomData;
 use embedded_hal::{digital::v2::OutputPin, serial};
 
-pub const PARAMS_SIZE: usize = 10;
-
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub enum Instruction {
     Ping = 0x01, // Instruction that checks whether the Packet has arrived to a device with the same ID as Packet ID
@@ -29,7 +27,7 @@ pub struct Controller<Serial, Direction, Error> {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Response {
+pub struct Response<const PARAMS_SIZE: usize> {
     pub packet_id: u8,
     pub length: usize,
     pub params: [u8; PARAMS_SIZE],
@@ -57,12 +55,12 @@ where
 
 pub trait Protocol<Error> {
     fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]);
-    fn recv(&mut self) -> Result<Response, Error>;
+    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error>;
     fn protocol_version(&self) -> u8;
     fn n_recv(&self) -> u8;
 
     fn ping(&mut self, id: u8) -> bool {
         self.send(id, Instruction::Ping, &[]);
-        self.recv().is_ok()
+        self.recv::<0>().is_ok()
     }
 }
