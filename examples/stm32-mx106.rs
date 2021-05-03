@@ -33,6 +33,7 @@ fn main() -> ! {
     // Initialize debugger
     rtt_init_print!();
     rprintln!("rprintln ok");
+    rprintln!("Connecting to MX106 ID {} @ {}", id, baudrate);
 
     // Initialize dynamixel on PA2-4
     let tx = gpioa.pa2.into_alternate_push_pull(&mut gpioa.crl);
@@ -64,7 +65,7 @@ fn main() -> ! {
             .map_err(|e| rprintln!("set led err: {:?}", e))
             .ok();
 
-        let goal: u32 = 8000;
+        let goal: u32 = 3000;
 
         if let Err(e) = dmx.set_mx106_velocity_limit(id, 1) {
             rprintln!("set velocity limit error: {:?}", e);

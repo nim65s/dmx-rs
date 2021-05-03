@@ -23,7 +23,7 @@ use stm32f1xx_hal::{pac, prelude::*, serial, timer::Timer};
 
 #[entry]
 fn main() -> ! {
-    let id = 1;
+    let id = 2;
     let baudrate = 115_200;
 
     let cp = cortex_m::Peripherals::take().unwrap();
@@ -41,6 +41,7 @@ fn main() -> ! {
     // Initialize debugger
     rtt_init_print!();
     rprintln!("rprintln ok");
+    rprintln!("Connecting to XL320 ID {} @ {}", id, baudrate);
 
     // Initialize dynamixel on PA9-10
     let tx = gpioa.pa9.into_alternate_push_pull(&mut gpioa.crh);
@@ -55,10 +56,7 @@ fn main() -> ! {
         clocks,
         &mut rcc.apb2,
     );
-    let mut dmx = Controller::new_2(serial, dummy_pin, 1);
-
-    rprintln!("ping {:?}", dmx.send(id, Instruction::Ping, &[]));
-    rprintln!("recv: {:?}", dmx.recv());
+    let mut dmx = Controller::new_2(serial, dummy_pin, 0);
 
     loop {
         for led in 0..8 {

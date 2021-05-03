@@ -55,6 +55,7 @@ fn main() -> ! {
     // Initialize debugger
     rtt_init_print!();
     rprintln!("rprintln ok");
+    rprintln!("Connecting to AX12A ID {} @ {}", id, baudrate);
 
     // Initialize dynamixel on PA9-10
     let tx = gpioa.pa9.into_alternate_push_pull(&mut gpioa.crh);
