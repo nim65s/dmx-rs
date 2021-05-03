@@ -11,19 +11,32 @@
  */
 
 use cortex_m_rt::entry;
-use dmx::{
-    protocol::{Controller, Instruction, Protocol},
-    xl320::XL320,
-};
+use dmx::{protocol::Controller, xl320::XL320};
 use dummy_pin::DummyPin;
 use nb::block;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
-use stm32f1xx_hal::{pac, prelude::*, serial, timer::Timer};
+use stm32f1xx_hal::{
+    pac,
+    prelude::*,
+    serial,
+    timer::{CountDownTimer, Timer},
+};
+
+fn sleep_ms(timer: &mut CountDownTimer<pac::SYST>, dur: usize) {
+    timer.reset();
+    block!(timer.wait()).unwrap();
+
+    for _ in 0..dur {
+        block!(timer.wait()).unwrap();
+    }
+
+    block!(timer.wait()).unwrap();
+}
 
 #[entry]
 fn main() -> ! {
-    let id = 2;
+    let id = 1;
     let baudrate = 115_200;
 
     let cp = cortex_m::Peripherals::take().unwrap();
@@ -58,17 +71,38 @@ fn main() -> ! {
     );
     let mut dmx = Controller::new_2(serial, dummy_pin, 0);
 
+    rprintln!(
+        "set torque enable 1: {:?}",
+        dmx.set_xl320_torque_enable(id, 1)
+    );
+    sleep_ms(&mut timer, 10);
+
+    rprintln!(
+        "set moving speed 100: {:?}",
+        dmx.set_xl320_moving_speed(id, 300)
+    );
+    sleep_ms(&mut timer, 10);
+
     loop {
         for led in 0..8 {
             rprintln!("set led {}: {:?}", led, dmx.set_xl320_led(id, led));
-            timer.reset();
-            block!(timer.wait()).unwrap();
-
-            for _ in 0..1000 {
-                block!(timer.wait()).unwrap();
-            }
-
-            block!(timer.wait()).unwrap();
+            sleep_ms(&mut timer, 500);
+        }
+        for goal in 0..8 {
+            rprintln!(
+                "set goal position {}: {:?}",
+                goal,
+                dmx.set_xl320_goal_position(id, goal * 127)
+            );
+            sleep_ms(&mut timer, 1000);
+        }
+        for goal in 0..=8 {
+            rprintln!(
+                "set goal position {}: {:?}",
+                8 - goal,
+                dmx.set_xl320_goal_position(id, (8 - goal) * 127)
+            );
+            sleep_ms(&mut timer, 1000);
         }
     }
 }
