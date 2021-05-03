@@ -13,7 +13,6 @@
 use cortex_m_rt::entry;
 use dmx::{
     protocol::{Controller, Instruction, Protocol},
-    protocol_2::Error2,
     xl320::XL320,
 };
 use dummy_pin::DummyPin;
@@ -24,6 +23,9 @@ use stm32f1xx_hal::{pac, prelude::*, serial, timer::Timer};
 
 #[entry]
 fn main() -> ! {
+    let id = 1;
+    let baudrate = 115_200;
+
     let cp = cortex_m::Peripherals::take().unwrap();
     let dp = pac::Peripherals::take().unwrap();
 
@@ -49,27 +51,18 @@ fn main() -> ! {
         dp.USART1,
         (tx, rx),
         &mut afio.mapr,
-        serial::Config::default().baudrate(115_200.bps()),
+        serial::Config::default().baudrate(baudrate.bps()),
         clocks,
         &mut rcc.apb2,
     );
-    let mut dmx = Controller::new_2(serial, dummy_pin);
+    let mut dmx = Controller::new_2(serial, dummy_pin, 1);
 
-    rprintln!("ping {:?}", dmx.send(1, Instruction::Ping, &[]));
-    match dmx.recv() {
-        Ok(resp) => rprintln!("Ok received {:?}", resp),
-        Err(Error2::Communication(_)) => rprintln!("Err communication error"),
-        Err(Error2::Protocol(status)) => rprintln!("Err protocol error: {:?}", status),
-        Err(Error2::CRCError) => rprintln!("Err CRC Error"),
-        Err(Error2::InstructionReceived) => rprintln!("Err Instruction Received"),
-    }
+    rprintln!("ping {:?}", dmx.send(id, Instruction::Ping, &[]));
+    rprintln!("recv: {:?}", dmx.recv());
 
     loop {
         for led in 0..8 {
-            rprintln!("set led to {}", led);
-            if let Err(_) = dmx.set_xl320_led(1, led) {
-                rprintln!("error setting led");
-            }
+            rprintln!("set led {}: {:?}", led, dmx.set_xl320_led(id, led));
             timer.reset();
             block!(timer.wait()).unwrap();
 

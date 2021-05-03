@@ -10,51 +10,34 @@
  */
 
 extern crate std;
+use std::{println, thread, time};
 
 use dummy_pin::DummyPin;
-use linux_embedded_hal::Serial;
-use std::path;
-use std::println;
-use std::thread;
-use std::time;
+use serialport;
 
 use dmx::{
-    protocol::{Controller, Instruction, Protocol, Response},
-    protocol_2::Error2,
+    protocol::{Controller, Instruction, Protocol},
+    serialport_embedded_hal::Serial,
     xl320::XL320,
 };
 
-fn print_err2(err: Error2<Serial>) {
-    match err {
-        Error2::Communication(_) => println!("Err communication error"),
-        Error2::Protocol(status) => println!("Err protocol error: {:?}", status),
-        Error2::CRCError => println!("Err CRC Error"),
-        Error2::InstructionReceived => println!("Err Instruction Received"),
-    }
-}
-
-fn print_resp(resp: Result<Response, Error2<Serial>>) {
-    match resp {
-        Ok(resp) => println!("Ok received {:?}", resp),
-        Err(err) => print_err2(err),
-    }
-}
-
 fn main() {
-    let serial = Serial::open(path::Path::new("/dev/ttyACM0")).unwrap();
-    let dummy_pin = DummyPin::new_low();
-    let mut dmx = Controller::new_2(serial, dummy_pin);
+    let id = 1;
+    let baudrate = 115_200;
 
-    dmx.send(1, Instruction::Ping, &[]);
-    print_resp(dmx.recv()); // Err Instruction Received
-    print_resp(dmx.recv()); // Ok received response {…}
+    let port = serialport::new("/dev/ttyACM0", baudrate).timeout(time::Duration::from_millis(100));
+    let serial = Serial::new(port);
+
+    let dummy_pin = DummyPin::new_low();
+    let mut dmx = Controller::new_2(serial, dummy_pin, 0);
+
+    dmx.send(id, Instruction::Ping, &[]);
+    println!("recv: {:?}", dmx.recv()); // Err Instruction Received
+    println!("recv: {:?}", dmx.recv()); // Ok received response {…}
 
     loop {
         for led in 0..8 {
-            println!("set led to {}", led);
-            if let Err(err) = dmx.set_xl320_led(1, led) {
-                print_err2(err);
-            }
+            println!("set led {}: {:?}", led, dmx.set_xl320_led(id, led));
             thread::sleep(time::Duration::from_secs(1));
         }
     }

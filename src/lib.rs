@@ -9,3 +9,6 @@ pub mod ax12a;
 pub mod mx106;
 pub mod mx28;
 pub mod xl320;
+
+#[cfg(feature = "std")]
+pub mod serialport_embedded_hal;

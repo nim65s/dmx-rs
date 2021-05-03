@@ -50,6 +50,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
         '    } else {'
         f'        self.send(id, Instruction::Read, &[{address[0]}, {address[1]}, {size_t[0]}, {size_t[1]}]);',
         '    }'
+        '    if self.n_recv() == 2 { self.recv()?; }'
         '    let params = self.recv()?.params;',
         f'    Ok(bytes_to_u{size * 8}(&params))',
         '}',

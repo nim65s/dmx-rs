@@ -7,67 +7,84 @@
  * We'll therefore receive all the packets we send, before actually receiving the real response.
  * and the controller is configured to expect 2 Response after set commands
  *
- * the AX12A has the default configuration: Protocol 1, Baudrate: 1M, device ID: 1
+ * the AX12A has the default configuration: Protocol 1, Baudrate: 115_200, device ID: 1
  */
 
 extern crate std;
-use std::{path, println, thread, time};
+use std::{println, thread, time};
 
 use dummy_pin::DummyPin;
-use linux_embedded_hal::Serial;
+use serialport;
 
-use dmx::{ax12a::AX12A, protocol::Controller};
+use dmx::{
+    ax12a::AX12A,
+    protocol::{Controller, Instruction, Protocol},
+    serialport_embedded_hal::Serial,
+};
 
 fn main() {
-    let serial = Serial::open(path::Path::new("/dev/ttyACM0")).unwrap();
+    let id = 1;
+    let baudrate = 115_200;
+
+    let port = serialport::new("/dev/ttyACM0", baudrate).timeout(time::Duration::from_millis(100));
+    let serial = Serial::new(port);
+
     let dummy_pin = DummyPin::new_low();
     let mut dmx = Controller::new_1(serial, dummy_pin, 0);
 
+    dmx.send(id, Instruction::Ping, &[]);
+    println!("recv: {:?}", dmx.recv());
+    println!("recv: {:?}", dmx.recv());
+
+    dmx.send(id, Instruction::Read, &[36, 2]);
+    println!("recv: {:?}", dmx.recv());
+    println!("recv: {:?}", dmx.recv());
+
+    //println!("get pose: {:?}", dmx.get_ax12a_present_position(id));
+
     for led in 0..6 {
-        match dmx.set_ax12a_led(1, led % 2) {
-            Err(e) => println!("set led to {} err: {:?}", led % 2, e),
-            Ok(_) => println!("set led to {} ok", led % 2),
-        }
+        println!("set led {}: {:?}", led % 2, dmx.set_ax12a_led(id, led % 2));
         thread::sleep(time::Duration::from_millis(500));
     }
 
-    match dmx.set_ax12a_torque_enable(1, 1) {
-        Err(e) => println!("enable torque err: {:?}", e),
-        Ok(_) => println!("enable torque ok"),
-    }
-
-    match dmx.set_ax12a_moving_speed(1, 00) {
-        Err(e) => println!("set moving speed err: {:?}", e),
-        Ok(_) => println!("set moving speed ok"),
-    }
+    println!(
+        "torque enable {}: {:?}",
+        1,
+        dmx.set_ax12a_torque_enable(id, 1)
+    );
+    println!(
+        "moving speed {}: {:?}",
+        100,
+        dmx.set_ax12a_moving_speed(id, 100)
+    );
 
     for goal in 0..8 {
-        match dmx.set_ax12a_goal_position(1, goal * 127) {
-            Err(e) => println!("set goal position {} err: {:?}", goal, e),
-            Ok(_) => println!("set goal position {} ok", goal),
-        }
+        println!(
+            "goal position {}: {:?}",
+            goal,
+            dmx.set_ax12a_goal_position(id, goal * 127)
+        );
         thread::sleep(time::Duration::from_millis(1000));
     }
 
     for goal in 0..=8 {
-        match dmx.set_ax12a_goal_position(1, (8 - goal) * 127) {
-            Err(e) => println!("set goal position {} err: {:?}", 8 - goal, e),
-            Ok(_) => println!("set goal position {} ok", 8 - goal),
-        }
+        println!(
+            "goal position {}: {:?}",
+            8 - goal,
+            dmx.set_ax12a_goal_position(id, (8 - goal) * 127)
+        );
         thread::sleep(time::Duration::from_millis(1000));
     }
 
-    match dmx.set_ax12a_torque_enable(1, 0) {
-        Err(e) => println!("disable torque err: {:?}", e),
-        Ok(_) => println!("disable torque ok"),
-    }
+    println!(
+        "set torque enable {}: {:?}",
+        0,
+        dmx.set_ax12a_torque_enable(id, 0)
+    );
 
     loop {
         for led in 0..2 {
-            match dmx.set_ax12a_led(1, led % 2) {
-                Err(e) => println!("set led to {} err: {:?}", led % 2, e),
-                Ok(_) => println!("set led to {} ok", led % 2),
-            }
+            println!("set led {}: {:?}", led % 2, dmx.set_ax12a_led(id, led % 2));
             thread::sleep(time::Duration::from_millis(100));
         }
     }

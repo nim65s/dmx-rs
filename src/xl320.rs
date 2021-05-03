@@ -12,6 +12,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[0, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -22,6 +25,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[2, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -31,6 +37,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[3, 1]);
         } else {
             self.send(id, Instruction::Read, &[3, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -58,6 +67,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[4, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -83,6 +95,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[5, 1]);
         } else {
             self.send(id, Instruction::Read, &[5, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -114,6 +129,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[6, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -139,6 +157,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[8, 2]);
         } else {
             self.send(id, Instruction::Read, &[8, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
@@ -170,6 +191,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[11, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -195,6 +219,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[12, 1]);
         } else {
             self.send(id, Instruction::Read, &[12, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -226,6 +253,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[13, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -255,6 +285,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[14, 1]);
         } else {
             self.send(id, Instruction::Read, &[14, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -286,6 +319,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[15, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -311,6 +347,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[17, 1]);
         } else {
             self.send(id, Instruction::Read, &[17, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -342,6 +381,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[18, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -367,6 +409,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[24, 1]);
         } else {
             self.send(id, Instruction::Read, &[24, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -394,6 +439,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[25, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -419,6 +467,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[27, 1]);
         } else {
             self.send(id, Instruction::Read, &[27, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -446,6 +497,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[28, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -471,6 +525,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[29, 1]);
         } else {
             self.send(id, Instruction::Read, &[29, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -498,6 +555,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[30, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -523,6 +583,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[32, 2]);
         } else {
             self.send(id, Instruction::Read, &[32, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
@@ -550,6 +613,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[35, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -576,6 +642,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[37, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -585,6 +654,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[39, 2]);
         } else {
             self.send(id, Instruction::Read, &[39, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
@@ -596,6 +668,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[41, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -605,6 +680,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[45, 1]);
         } else {
             self.send(id, Instruction::Read, &[45, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -616,6 +694,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[46, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -625,6 +706,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[47, 1]);
         } else {
             self.send(id, Instruction::Read, &[47, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
@@ -636,6 +720,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[49, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -646,6 +733,9 @@ pub trait XL320<Error>: Protocol<Error> {
         } else {
             self.send(id, Instruction::Read, &[50, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv()?;
+        }
         let params = self.recv()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -655,6 +745,9 @@ pub trait XL320<Error>: Protocol<Error> {
             self.send(id, Instruction::Read, &[51, 2]);
         } else {
             self.send(id, Instruction::Read, &[51, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv()?;
         }
         let params = self.recv()?.params;
         Ok(bytes_to_u16(&params))

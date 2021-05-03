@@ -24,11 +24,11 @@ use stm32f1xx_hal::{
     timer::{CountDownTimer, Timer},
 };
 
-fn sleep_ms(timer: &mut CountDownTimer<pac::SYST>, ms: usize) {
+fn sleep_ms(timer: &mut CountDownTimer<pac::SYST>, dur: usize) {
     timer.reset();
     block!(timer.wait()).unwrap();
 
-    for _ in 0..ms {
+    for _ in 0..dur {
         block!(timer.wait()).unwrap();
     }
 
@@ -37,6 +37,9 @@ fn sleep_ms(timer: &mut CountDownTimer<pac::SYST>, ms: usize) {
 
 #[entry]
 fn main() -> ! {
+    let id = 1;
+    let baudrate = 115_200;
+
     let cp = cortex_m::Peripherals::take().unwrap();
     let dp = pac::Peripherals::take().unwrap();
 
@@ -62,7 +65,7 @@ fn main() -> ! {
         dp.USART1,
         (tx, rx),
         &mut afio.mapr,
-        serial::Config::default().baudrate(115_200.bps()),
+        serial::Config::default().baudrate(baudrate.bps()),
         clocks,
         &mut rcc.apb2,
     );
@@ -70,50 +73,51 @@ fn main() -> ! {
     sleep_ms(&mut timer, 500);
 
     for led in 0..6 {
-        match dmx.set_ax12a_led(1, led % 2) {
-            Err(e) => rprintln!("set led to {} err: {:?}", led % 2, e),
-            Ok(_) => rprintln!("set led to {} ok", led % 2),
-        }
+        rprintln!("set led {}: {:?}", led % 2, dmx.set_ax12a_led(id, led % 2));
         sleep_ms(&mut timer, 500);
     }
 
-    match dmx.set_ax12a_torque_enable(1, 1) {
-        Err(e) => rprintln!("enable torque err: {:?}", e),
-        Ok(_) => rprintln!("enable torque ok"),
-    }
-
-    match dmx.set_ax12a_moving_speed(1, 00) {
-        Err(e) => rprintln!("set moving speed err: {:?}", e),
-        Ok(_) => rprintln!("set moving speed ok"),
-    }
+    rprintln!(
+        "torque enable {}: {:?}",
+        1,
+        dmx.set_ax12a_torque_enable(id, 1)
+    );
+    sleep_ms(&mut timer, 10);
+    rprintln!(
+        "moving speed {}: {:?}",
+        100,
+        dmx.set_ax12a_moving_speed(id, 100)
+    );
+    sleep_ms(&mut timer, 10);
 
     for goal in 0..8 {
-        match dmx.set_ax12a_goal_position(1, goal * 127) {
-            Err(e) => rprintln!("set goal position {} err: {:?}", goal, e),
-            Ok(_) => rprintln!("set goal position {} ok", goal),
-        }
+        rprintln!(
+            "goal position {}: {:?}",
+            goal,
+            dmx.set_ax12a_goal_position(id, goal * 127)
+        );
         sleep_ms(&mut timer, 1000);
     }
 
     for goal in 0..=8 {
-        match dmx.set_ax12a_goal_position(1, (8 - goal) * 127) {
-            Err(e) => rprintln!("set goal position {} err: {:?}", 8 - goal, e),
-            Ok(_) => rprintln!("set goal position {} ok", 8 - goal),
-        }
+        rprintln!(
+            "goal position {}: {:?}",
+            8 - goal,
+            dmx.set_ax12a_goal_position(id, (8 - goal) * 127)
+        );
         sleep_ms(&mut timer, 1000);
     }
 
-    match dmx.set_ax12a_torque_enable(1, 0) {
-        Err(e) => rprintln!("disable torque err: {:?}", e),
-        Ok(_) => rprintln!("disable torque ok"),
-    }
+    rprintln!(
+        "torque enable {}: {:?}",
+        0,
+        dmx.set_ax12a_torque_enable(id, 0)
+    );
+    sleep_ms(&mut timer, 10);
 
     loop {
         for led in 0..2 {
-            match dmx.set_ax12a_led(1, led % 2) {
-                Err(e) => rprintln!("set led to {} err: {:?}", led % 2, e),
-                Ok(_) => rprintln!("set led to {} ok", led % 2),
-            }
+            rprintln!("set led {}: {:?}", led % 2, dmx.set_ax12a_led(id, led % 2));
             sleep_ms(&mut timer, 100);
         }
     }
