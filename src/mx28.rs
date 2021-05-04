@@ -10,6 +10,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[0, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -19,6 +22,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[2, 4]);
         } else {
             self.send(id, Instruction::Read, &[2, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -30,6 +36,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[6, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -40,6 +49,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[7, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -49,6 +61,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Write, &[7, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[7, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
         }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
@@ -62,6 +77,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[8, 1]);
         } else {
             self.send(id, Instruction::Read, &[8, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -77,6 +95,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[8, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -89,6 +110,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[9, 1]);
         } else {
             self.send(id, Instruction::Read, &[9, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -104,6 +128,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[9, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -116,6 +143,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[10, 1]);
         } else {
             self.send(id, Instruction::Read, &[10, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -131,6 +161,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[10, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -143,6 +176,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[11, 1]);
         } else {
             self.send(id, Instruction::Read, &[11, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -158,6 +194,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[11, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -170,6 +209,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[12, 1]);
         } else {
             self.send(id, Instruction::Read, &[12, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -185,6 +227,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[12, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -197,6 +242,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[13, 1]);
         } else {
             self.send(id, Instruction::Read, &[13, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -212,6 +260,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[13, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -224,6 +275,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[20, 4]);
         } else {
             self.send(id, Instruction::Read, &[20, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -247,6 +301,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[20, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -259,6 +316,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[24, 4]);
         } else {
             self.send(id, Instruction::Read, &[24, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -282,6 +342,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[24, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -294,6 +357,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[31, 1]);
         } else {
             self.send(id, Instruction::Read, &[31, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -309,6 +375,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[31, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -321,6 +390,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[32, 2]);
         } else {
             self.send(id, Instruction::Read, &[32, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -336,6 +408,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -348,6 +423,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[34, 2]);
         } else {
             self.send(id, Instruction::Read, &[34, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -363,6 +441,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -375,6 +456,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[36, 2]);
         } else {
             self.send(id, Instruction::Read, &[36, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -390,6 +474,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[36, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -402,6 +489,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[40, 4]);
         } else {
             self.send(id, Instruction::Read, &[40, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -425,6 +515,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[40, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -437,6 +530,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[44, 4]);
         } else {
             self.send(id, Instruction::Read, &[44, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -460,6 +556,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[44, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -472,6 +571,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[48, 4]);
         } else {
             self.send(id, Instruction::Read, &[48, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -495,6 +597,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[48, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -507,6 +612,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[52, 4]);
         } else {
             self.send(id, Instruction::Read, &[52, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -530,6 +638,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[52, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -542,6 +653,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[63, 1]);
         } else {
             self.send(id, Instruction::Read, &[63, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -557,6 +671,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[63, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -569,6 +686,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[64, 1]);
         } else {
             self.send(id, Instruction::Read, &[64, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -584,6 +704,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[64, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -597,6 +720,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[65, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -606,6 +732,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Write, &[65, params[0]]);
         } else {
             self.send(id, Instruction::Write, &[65, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
         }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
@@ -619,6 +748,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[68, 1]);
         } else {
             self.send(id, Instruction::Read, &[68, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -634,6 +766,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[68, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -647,6 +782,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[69, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -657,6 +795,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[70, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -666,6 +807,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[76, 2]);
         } else {
             self.send(id, Instruction::Read, &[76, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -681,6 +825,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[76, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -693,6 +840,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[78, 2]);
         } else {
             self.send(id, Instruction::Read, &[78, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -708,6 +858,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[78, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -720,6 +873,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[80, 2]);
         } else {
             self.send(id, Instruction::Read, &[80, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -735,6 +891,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[80, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -747,6 +906,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[82, 2]);
         } else {
             self.send(id, Instruction::Read, &[82, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -762,6 +924,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[82, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -774,6 +939,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[84, 2]);
         } else {
             self.send(id, Instruction::Read, &[84, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -789,6 +957,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[84, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -801,6 +972,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[88, 2]);
         } else {
             self.send(id, Instruction::Read, &[88, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -816,6 +990,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[88, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -828,6 +1005,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[90, 2]);
         } else {
             self.send(id, Instruction::Read, &[90, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -843,6 +1023,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[90, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -855,6 +1038,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[98, 1]);
         } else {
             self.send(id, Instruction::Read, &[98, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -870,6 +1056,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[98, 0, params[0]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<1>()?))
         } else {
@@ -882,6 +1071,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[100, 2]);
         } else {
             self.send(id, Instruction::Read, &[100, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -897,6 +1089,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Write, &[100, 0, params[0], params[1]]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<2>()?))
         } else {
@@ -909,6 +1104,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[104, 4]);
         } else {
             self.send(id, Instruction::Read, &[104, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -932,6 +1130,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[104, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -944,6 +1145,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[108, 4]);
         } else {
             self.send(id, Instruction::Read, &[108, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -967,6 +1171,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[108, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -979,6 +1186,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[112, 4]);
         } else {
             self.send(id, Instruction::Read, &[112, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -1002,6 +1212,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[112, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -1014,6 +1227,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[116, 4]);
         } else {
             self.send(id, Instruction::Read, &[116, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -1037,6 +1253,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
                 &[116, 0, params[0], params[1], params[2], params[3]],
             );
         }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
         if self.n_recv() >= 1 {
             Ok(Some(self.recv::<4>()?))
         } else {
@@ -1050,6 +1269,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[120, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -1059,6 +1281,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[122, 1]);
         } else {
             self.send(id, Instruction::Read, &[122, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
@@ -1070,6 +1295,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[123, 0, 1, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
@@ -1079,6 +1307,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[124, 2]);
         } else {
             self.send(id, Instruction::Read, &[124, 0, 2, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
@@ -1090,6 +1321,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[126, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -1099,6 +1333,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[128, 4]);
         } else {
             self.send(id, Instruction::Read, &[128, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -1110,6 +1347,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[132, 0, 4, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
@@ -1119,6 +1359,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[136, 4]);
         } else {
             self.send(id, Instruction::Read, &[136, 0, 4, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
@@ -1130,6 +1373,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[140, 0, 4, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<4>()?.params;
         Ok(bytes_to_u32(&params))
     }
@@ -1140,6 +1386,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         } else {
             self.send(id, Instruction::Read, &[144, 0, 2, 0]);
         }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
@@ -1149,6 +1398,9 @@ pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             self.send(id, Instruction::Read, &[146, 1]);
         } else {
             self.send(id, Instruction::Read, &[146, 0, 1, 0]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
