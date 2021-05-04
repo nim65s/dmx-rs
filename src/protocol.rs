@@ -1,4 +1,3 @@
-use core::marker::PhantomData;
 use embedded_hal::{digital::v2::OutputPin, serial};
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
@@ -19,12 +18,10 @@ pub enum Instruction {
 }
 
 #[derive(Debug)]
-pub struct Controller<Serial, Direction, Error, const PROTOCOL_VERSION: u8> {
+pub struct Controller<Serial, Direction, const PROTOCOL_VERSION: u8> {
     pub serial: Serial,
     pub direction: Direction,
     pub n_recv: u8,
-    protocol_version: u8,
-    _error: PhantomData<Error>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -35,8 +32,7 @@ pub struct Response<const PARAMS_SIZE: usize> {
     pub error: u8,
 }
 
-impl<Serial, Direction, Error, const PROTOCOL_VERSION: u8>
-    Controller<Serial, Direction, Error, PROTOCOL_VERSION>
+impl<Serial, Direction, const PROTOCOL_VERSION: u8> Controller<Serial, Direction, PROTOCOL_VERSION>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
@@ -45,21 +41,20 @@ where
         serial: Serial,
         direction: Direction,
         n_recv: u8,
-    ) -> Controller<Serial, Direction, Error, PROTOCOL_VERSION> {
+    ) -> Controller<Serial, Direction, PROTOCOL_VERSION> {
         Controller {
             serial,
             direction,
             n_recv,
-            protocol_version: PROTOCOL_VERSION,
-            _error: PhantomData,
         }
     }
 }
 
-pub trait Protocol<Error, const PROTOCOL_VERSION: u8> {
+pub trait Protocol<const PROTOCOL_VERSION: u8> {
+    type Error;
+
     fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]);
-    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error>;
-    //fn protocol_version(&self) -> u8;
+    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Self::Error>;
     fn n_recv(&self) -> u8;
 
     fn ping(&mut self, id: u8) -> bool {

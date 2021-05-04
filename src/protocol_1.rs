@@ -27,12 +27,13 @@ where
     }
 }
 
-impl<Serial, Direction> Protocol<Error1<Serial>, 1>
-    for Controller<Serial, Direction, Error1<Serial>, 1>
+impl<Serial, Direction> Protocol<1> for Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
+    type Error = Error1<Serial>;
+
     fn n_recv(&self) -> u8 {
         self.n_recv
     }
@@ -53,7 +54,7 @@ where
         self.direction.set_low().ok();
     }
 
-    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error1<Serial>> {
+    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Self::Error> {
         // wait for HEADER
         let mut head = 0;
         loop {
@@ -95,7 +96,7 @@ where
     }
 }
 
-impl<Serial, Direction> Controller<Serial, Direction, Error1<Serial>, 1>
+impl<Serial, Direction> Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
@@ -104,7 +105,7 @@ where
         serial: Serial,
         direction: Direction,
         n_recv: u8,
-    ) -> Controller<Serial, Direction, Error1<Serial>, 1> {
+    ) -> Controller<Serial, Direction, 1> {
         Controller::new(serial, direction, n_recv)
     }
 }

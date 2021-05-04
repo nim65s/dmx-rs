@@ -1,12 +1,10 @@
 use crate::convert::*;
 use crate::protocol::{Controller, Instruction, Protocol, Response};
-use crate::protocol_1::Error1;
-use crate::protocol_2::Error2;
 use embedded_hal::{digital::v2::OutputPin, serial};
 
-pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERSION> {
+pub trait MX28<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
     /// Model Number (initial: 30)
-    fn get_mx28_model_number(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_model_number(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[0, 2]);
         } else {
@@ -16,7 +14,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u16(&params))
     }
     /// Model Information (initial: -)
-    fn get_mx28_model_information(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_model_information(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[2, 4]);
         } else {
@@ -26,7 +24,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u32(&params))
     }
     /// Firmware Version (initial: -)
-    fn get_mx28_firmware_version(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_firmware_version(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[6, 1]);
         } else {
@@ -36,7 +34,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u8(&params))
     }
     /// DYNAMIXEL ID (initial: 1)
-    fn get_mx28_id(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_id(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[7, 1]);
         } else {
@@ -45,7 +43,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[7, params[0]]);
@@ -59,7 +57,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Communication Baud Rate (initial: 1)
-    fn get_mx28_baud_rate(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_baud_rate(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[8, 1]);
         } else {
@@ -68,7 +66,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_baud_rate(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_baud_rate(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[8, params[0]]);
@@ -82,7 +84,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Response Delay Time (initial: 250)
-    fn get_mx28_return_delay_time(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_return_delay_time(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[9, 1]);
         } else {
@@ -95,7 +97,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error> {
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[9, params[0]]);
@@ -109,7 +111,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Drive Mode (initial: 0)
-    fn get_mx28_drive_mode(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_drive_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[10, 1]);
         } else {
@@ -118,7 +120,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_drive_mode(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_drive_mode(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[10, params[0]]);
@@ -132,7 +138,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Operating Mode (initial: 3)
-    fn get_mx28_operating_mode(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_operating_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[11, 1]);
         } else {
@@ -145,7 +151,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error> {
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[11, params[0]]);
@@ -159,7 +165,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Secondary ID (initial: 255)
-    fn get_mx28_secondary_id(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_secondary_id(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[12, 1]);
         } else {
@@ -168,7 +174,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_secondary_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_secondary_id(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[12, params[0]]);
@@ -182,7 +192,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Protocol Type (initial: 2)
-    fn get_mx28_protocol_type(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_protocol_type(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[13, 1]);
         } else {
@@ -191,7 +201,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_protocol_type(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_protocol_type(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[13, params[0]]);
@@ -205,7 +219,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Home Position Offset (initial: 0)
-    fn get_mx28_homing_offset(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_homing_offset(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[20, 4]);
         } else {
@@ -218,7 +232,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -240,7 +254,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Velocity Threshold for Movement Detection (initial: 10)
-    fn get_mx28_moving_threshold(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_moving_threshold(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[24, 4]);
         } else {
@@ -253,7 +267,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -275,7 +289,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Maximum Internal Temperature Limit (initial: 80)
-    fn get_mx28_temperature_limit(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_temperature_limit(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[31, 1]);
         } else {
@@ -288,7 +302,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error> {
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[31, params[0]]);
@@ -302,7 +316,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Maximum Input Voltage Limit (initial: 160)
-    fn get_mx28_max_voltage_limit(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_max_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[32, 2]);
         } else {
@@ -315,7 +329,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[32, params[0], params[1]]);
@@ -329,7 +343,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Minimum Input Voltage Limit (initial: 95)
-    fn get_mx28_min_voltage_limit(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_min_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[34, 2]);
         } else {
@@ -342,7 +356,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[34, params[0], params[1]]);
@@ -356,7 +370,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Maximum PWM Limit (initial: 885)
-    fn get_mx28_pwm_limit(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_pwm_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[36, 2]);
         } else {
@@ -365,7 +379,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_pwm_limit(&mut self, id: u8, params: u16) -> Result<Option<Response<2>>, Error> {
+    fn set_mx28_pwm_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[36, params[0], params[1]]);
@@ -379,7 +397,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Maximum Acceleration Limit (initial: 32767)
-    fn get_mx28_acceleration_limit(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_acceleration_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[40, 4]);
         } else {
@@ -392,7 +410,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -414,7 +432,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Maximum Velocity Limit (initial: 230)
-    fn get_mx28_velocity_limit(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_velocity_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[44, 4]);
         } else {
@@ -427,7 +445,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -449,7 +467,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Maximum Position Limit (initial: 4,095)
-    fn get_mx28_max_position_limit(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_max_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[48, 4]);
         } else {
@@ -462,7 +480,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -484,7 +502,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Minimum Position Limit (initial: 0)
-    fn get_mx28_min_position_limit(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_min_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[52, 4]);
         } else {
@@ -497,7 +515,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -519,7 +537,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Shutdown Error Information (initial: 52)
-    fn get_mx28_shutdown(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_shutdown(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[63, 1]);
         } else {
@@ -528,7 +546,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_shutdown(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_shutdown(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[63, params[0]]);
@@ -542,7 +564,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Motor Torque On/Off (initial: 0)
-    fn get_mx28_torque_enable(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_torque_enable(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[64, 1]);
         } else {
@@ -551,7 +573,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_torque_enable(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_torque_enable(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[64, params[0]]);
@@ -565,7 +591,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Status LED On/Off (initial: 0)
-    fn get_mx28_led(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_led(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[65, 1]);
         } else {
@@ -574,7 +600,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[65, params[0]]);
@@ -588,7 +614,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Select Types of Status Return (initial: 2)
-    fn get_mx28_status_return_level(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_status_return_level(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[68, 1]);
         } else {
@@ -601,7 +627,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error> {
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[68, params[0]]);
@@ -615,7 +641,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// REG_WRITE Instruction Flag (initial: 0)
-    fn get_mx28_registered_instruction(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_registered_instruction(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[69, 1]);
         } else {
@@ -625,7 +651,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u8(&params))
     }
     /// Hardware Error Status (initial: 0)
-    fn get_mx28_hardware_error_status(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_hardware_error_status(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[70, 1]);
         } else {
@@ -635,7 +661,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u8(&params))
     }
     /// I Gain of Velocity (initial: 1920)
-    fn get_mx28_velocity_i_gain(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_velocity_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[76, 2]);
         } else {
@@ -648,7 +674,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[76, params[0], params[1]]);
@@ -662,7 +688,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// P Gain of Velocity (initial: 100)
-    fn get_mx28_velocity_p_gain(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_velocity_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[78, 2]);
         } else {
@@ -675,7 +701,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[78, params[0], params[1]]);
@@ -689,7 +715,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// D Gain of Position (initial: 0)
-    fn get_mx28_position_d_gain(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_position_d_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[80, 2]);
         } else {
@@ -702,7 +728,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[80, params[0], params[1]]);
@@ -716,7 +742,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// I Gain of Position (initial: 0)
-    fn get_mx28_position_i_gain(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_position_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[82, 2]);
         } else {
@@ -729,7 +755,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[82, params[0], params[1]]);
@@ -743,7 +769,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// P Gain of Position (initial: 850)
-    fn get_mx28_position_p_gain(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_position_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[84, 2]);
         } else {
@@ -756,7 +782,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[84, params[0], params[1]]);
@@ -770,7 +796,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// 2nd Gain of Feed-Forward (initial: 0)
-    fn get_mx28_feedforward_2nd_gain(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_feedforward_2nd_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[88, 2]);
         } else {
@@ -783,7 +809,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[88, params[0], params[1]]);
@@ -797,7 +823,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// 1st Gain of Feed-Forward (initial: 0)
-    fn get_mx28_feedforward_1st_gain(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_feedforward_1st_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[90, 2]);
         } else {
@@ -810,7 +836,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error> {
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[90, params[0], params[1]]);
@@ -824,7 +850,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// DYNAMIXEL BUS Watchdog (initial: 0)
-    fn get_mx28_bus_watchdog(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_bus_watchdog(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[98, 1]);
         } else {
@@ -833,7 +859,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<1>()?.params;
         Ok(bytes_to_u8(&params))
     }
-    fn set_mx28_bus_watchdog(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error> {
+    fn set_mx28_bus_watchdog(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
         let params = u8_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[98, params[0]]);
@@ -847,7 +877,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Desired PWM Value (initial: -)
-    fn get_mx28_goal_pwm(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_goal_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[100, 2]);
         } else {
@@ -856,7 +886,11 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         let params = self.recv::<2>()?.params;
         Ok(bytes_to_u16(&params))
     }
-    fn set_mx28_goal_pwm(&mut self, id: u8, params: u16) -> Result<Option<Response<2>>, Error> {
+    fn set_mx28_goal_pwm(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
         let params = u16_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Write, &[100, params[0], params[1]]);
@@ -870,7 +904,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Desired Velocity Value (initial: -)
-    fn get_mx28_goal_velocity(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_goal_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[104, 4]);
         } else {
@@ -883,7 +917,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -905,7 +939,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Acceleration Value of Profile (initial: 0)
-    fn get_mx28_profile_acceleration(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_profile_acceleration(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[108, 4]);
         } else {
@@ -918,7 +952,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -940,7 +974,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Velocity Value of Profile (initial: 0)
-    fn get_mx28_profile_velocity(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_profile_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[112, 4]);
         } else {
@@ -953,7 +987,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -975,7 +1009,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Desired Position (initial: -)
-    fn get_mx28_goal_position(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_goal_position(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[116, 4]);
         } else {
@@ -988,7 +1022,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Error> {
+    ) -> Result<Option<Response<4>>, Self::Error> {
         let params = u32_to_bytes(params);
         if PROTOCOL_VERSION == 1 {
             self.send(
@@ -1010,7 +1044,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         }
     }
     /// Count Time in Millisecond (initial: -)
-    fn get_mx28_realtime_tick(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_realtime_tick(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[120, 2]);
         } else {
@@ -1020,7 +1054,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u16(&params))
     }
     /// Movement Flag (initial: 0)
-    fn get_mx28_moving(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_moving(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[122, 1]);
         } else {
@@ -1030,7 +1064,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u8(&params))
     }
     /// Detailed Information of Movement Status (initial: 0)
-    fn get_mx28_moving_status(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_moving_status(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[123, 1]);
         } else {
@@ -1040,7 +1074,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u8(&params))
     }
     /// Present PWM Value (initial: -)
-    fn get_mx28_present_pwm(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_present_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[124, 2]);
         } else {
@@ -1050,7 +1084,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u16(&params))
     }
     /// Present Load Value (initial: -)
-    fn get_mx28_present_load(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_present_load(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[126, 2]);
         } else {
@@ -1060,7 +1094,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u16(&params))
     }
     /// Present Velocity Value (initial: -)
-    fn get_mx28_present_velocity(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_present_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[128, 4]);
         } else {
@@ -1070,7 +1104,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u32(&params))
     }
     /// Present Position Value (initial: -)
-    fn get_mx28_present_position(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_present_position(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[132, 4]);
         } else {
@@ -1080,7 +1114,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u32(&params))
     }
     /// Desired Velocity Trajectory from Profile (initial: -)
-    fn get_mx28_velocity_trajectory(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_velocity_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[136, 4]);
         } else {
@@ -1090,7 +1124,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u32(&params))
     }
     /// Desired Position Trajectory from Profile (initial: -)
-    fn get_mx28_position_trajectory(&mut self, id: u8) -> Result<u32, Error> {
+    fn get_mx28_position_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[140, 4]);
         } else {
@@ -1100,7 +1134,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u32(&params))
     }
     /// Present Input Voltage (initial: -)
-    fn get_mx28_present_input_voltage(&mut self, id: u8) -> Result<u16, Error> {
+    fn get_mx28_present_input_voltage(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[144, 2]);
         } else {
@@ -1110,7 +1144,7 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
         Ok(bytes_to_u16(&params))
     }
     /// Present Internal Temperature (initial: -)
-    fn get_mx28_present_temperature(&mut self, id: u8) -> Result<u8, Error> {
+    fn get_mx28_present_temperature(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[146, 1]);
         } else {
@@ -1121,14 +1155,14 @@ pub trait MX28<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERS
     }
 }
 
-impl<Serial, Direction> MX28<Error1<Serial>, 1> for Controller<Serial, Direction, Error1<Serial>, 1>
+impl<Serial, Direction> MX28<1> for Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
 }
 
-impl<Serial, Direction> MX28<Error2<Serial>, 2> for Controller<Serial, Direction, Error2<Serial>, 2>
+impl<Serial, Direction> MX28<2> for Controller<Serial, Direction, 2>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,

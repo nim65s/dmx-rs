@@ -10,25 +10,23 @@ from subprocess import run
 HEAD = """
 use crate::convert::*;
 use crate::protocol::{Controller, Instruction, Protocol, Response};
-use crate::protocol_1::Error1;
-use crate::protocol_2::Error2;
 use embedded_hal::{digital::v2::OutputPin, serial};
 
 
-pub trait MOTOR<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERSION> {
+pub trait MOTOR<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
 """
 
 TAIL = """
 }
 
-impl<Serial, Direction> MOTOR<Error1<Serial>, 1> for Controller<Serial, Direction, Error1<Serial>, 1>
+impl<Serial, Direction> MOTOR<1> for Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
 }
 
-impl<Serial, Direction> MOTOR<Error2<Serial>, 2> for Controller<Serial, Direction, Error2<Serial>, 2>
+impl<Serial, Direction> MOTOR<2> for Controller<Serial, Direction, 2>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
@@ -44,7 +42,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
     data_name = data_name.replace(' ', '_').lower()
     lines = [
         f'/// {description} (initial: {initial_value})',
-        f'pub fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Error> {{',
+        f'pub fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Self::Error> {{',
         '    if PROTOCOL_VERSION == 1 {',
         f'        self.send(id, Instruction::Read, &[{address[0]}, {size_t[0]}]);',
         '    } else {'
@@ -58,7 +56,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
     if access == 'RW':
         params = ', '.join(f'params[{i}]' for i in range(size))
         lines += [
-            f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Error> {{',
+            f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Self::Error> {{',
             f'    let params = u{size * 8}_to_bytes(params);',
             '    if PROTOCOL_VERSION == 1 {',
             f'        self.send(id, Instruction::Write, &[{address[0]}, {params}]);',
