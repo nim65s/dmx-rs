@@ -19,11 +19,12 @@ pub enum Instruction {
 }
 
 #[derive(Debug)]
-pub struct Controller<Serial, Direction, Error> {
+pub struct Controller<Serial, Direction, Error, const PROTOCOL_VERSION: u8> {
     pub serial: Serial,
     pub direction: Direction,
     pub n_recv: u8,
-    error: PhantomData<Error>,
+    protocol_version: u8,
+    _error: PhantomData<Error>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -34,7 +35,8 @@ pub struct Response<const PARAMS_SIZE: usize> {
     pub error: u8,
 }
 
-impl<Serial, Direction, Error> Controller<Serial, Direction, Error>
+impl<Serial, Direction, Error, const PROTOCOL_VERSION: u8>
+    Controller<Serial, Direction, Error, PROTOCOL_VERSION>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
@@ -43,20 +45,21 @@ where
         serial: Serial,
         direction: Direction,
         n_recv: u8,
-    ) -> Controller<Serial, Direction, Error> {
+    ) -> Controller<Serial, Direction, Error, PROTOCOL_VERSION> {
         Controller {
             serial,
             direction,
             n_recv,
-            error: PhantomData,
+            protocol_version: PROTOCOL_VERSION,
+            _error: PhantomData,
         }
     }
 }
 
-pub trait Protocol<Error> {
+pub trait Protocol<Error, const PROTOCOL_VERSION: u8> {
     fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]);
     fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error>;
-    fn protocol_version(&self) -> u8;
+    //fn protocol_version(&self) -> u8;
     fn n_recv(&self) -> u8;
 
     fn ping(&mut self, id: u8) -> bool {

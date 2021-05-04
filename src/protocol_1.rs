@@ -27,14 +27,12 @@ where
     }
 }
 
-impl<Serial, Direction> Protocol<Error1<Serial>> for Controller<Serial, Direction, Error1<Serial>>
+impl<Serial, Direction> Protocol<Error1<Serial>, 1>
+    for Controller<Serial, Direction, Error1<Serial>, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    fn protocol_version(&self) -> u8 {
-        1
-    }
     fn n_recv(&self) -> u8 {
         self.n_recv
     }
@@ -97,7 +95,7 @@ where
     }
 }
 
-impl<Serial, Direction> Controller<Serial, Direction, Error1<Serial>>
+impl<Serial, Direction> Controller<Serial, Direction, Error1<Serial>, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
@@ -106,7 +104,7 @@ where
         serial: Serial,
         direction: Direction,
         n_recv: u8,
-    ) -> Controller<Serial, Direction, Error1<Serial>> {
+    ) -> Controller<Serial, Direction, Error1<Serial>, 1> {
         Controller::new(serial, direction, n_recv)
     }
 }

@@ -15,20 +15,20 @@ use crate::protocol_2::Error2;
 use embedded_hal::{digital::v2::OutputPin, serial};
 
 
-pub trait MOTOR<Error>: Protocol<Error> {
+pub trait MOTOR<Error, const PROTOCOL_VERSION: u8>: Protocol<Error, PROTOCOL_VERSION> {
 """
 
 TAIL = """
 }
 
-impl<Serial, Direction> MOTOR<Error1<Serial>> for Controller<Serial, Direction, Error1<Serial>>
+impl<Serial, Direction> MOTOR<Error1<Serial>, 1> for Controller<Serial, Direction, Error1<Serial>, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
 }
 
-impl<Serial, Direction> MOTOR<Error2<Serial>> for Controller<Serial, Direction, Error2<Serial>>
+impl<Serial, Direction> MOTOR<Error2<Serial>, 2> for Controller<Serial, Direction, Error2<Serial>, 2>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
@@ -45,7 +45,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
     lines = [
         f'/// {description} (initial: {initial_value})',
         f'pub fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Error> {{',
-        '    if self.protocol_version() == 1 {',
+        '    if PROTOCOL_VERSION == 1 {',
         f'        self.send(id, Instruction::Read, &[{address[0]}, {size_t[0]}]);',
         '    } else {'
         f'        self.send(id, Instruction::Read, &[{address[0]}, {address[1]}, {size_t[0]}, {size_t[1]}]);',
@@ -60,7 +60,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
         lines += [
             f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Error> {{',
             f'    let params = u{size * 8}_to_bytes(params);',
-            '    if self.protocol_version() == 1 {',
+            '    if PROTOCOL_VERSION == 1 {',
             f'        self.send(id, Instruction::Write, &[{address[0]}, {params}]);',
             '    } else {',
             f'        self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, {params}]);',
