@@ -54,52 +54,69 @@ fn main() -> ! {
 
     loop {
         //rprintln!("ping {}", dmx.ping(1));
-        rprintln!("torque enable {:?}", dmx.get_mx106_torque_enable(id));
-        rprintln!("present position {:?}", dmx.get_mx106_present_position(id));
-        rprintln!("goal position {:?}", dmx.get_mx106_goal_position(id));
-        dmx.set_mx106_operating_mode(id, 4)
-            .map_err(|e| rprintln!("set operating mode err: {:?}", e))
-            .ok();
-        dmx.set_mx106_torque_enable(id, 1)
-            .map_err(|e| rprintln!("set torque enable err: {:?}", e))
-            .ok();
-        dmx.set_mx106_led(id, 1)
-            .map_err(|e| rprintln!("set led err: {:?}", e))
-            .ok();
+        rprintln!("get torque enable: {:?}", dmx.get_mx106_torque_enable(id));
+        rprintln!(
+            "get present position: {:?}",
+            dmx.get_mx106_present_position(id)
+        );
+        rprintln!("get goal position: {:?}", dmx.get_mx106_goal_position(id));
+        rprintln!(
+            "set operationg mode {}: {:?}",
+            4,
+            dmx.set_mx106_operating_mode(id, 4)
+        );
+        rprintln!(
+            "set torque enable {}: {:?}",
+            1,
+            dmx.set_mx106_torque_enable(id, 1)
+        );
+        rprintln!("set led {}: {:?}", 1, dmx.set_mx106_led(id, 1));
 
         let goal: u32 = if i { 3000 } else { 2000 };
         i = !i;
 
-        if let Err(e) = dmx.set_mx106_velocity_limit(id, 1) {
-            rprintln!("set velocity limit error: {:?}", e);
-        }
+        rprintln!(
+            "set velocity limit {}: {:?}",
+            1,
+            dmx.set_mx106_velocity_limit(id, 1)
+        );
+        rprintln!(
+            "set profile acceleration {}: {:?}",
+            10,
+            dmx.set_mx106_profile_acceleration(id, 10)
+        );
+        rprintln!(
+            "set profile velocity {}: {:?}",
+            1000,
+            dmx.set_mx106_profile_velocity(id, 1000)
+        );
+        rprintln!(
+            "set goal position {}: {:?}",
+            goal,
+            dmx.set_mx106_goal_position(id, goal)
+        );
 
-        dmx.set_mx106_velocity_limit(id, 1)
-            .map_err(|e| rprintln!("set velocity err: {:?}", e))
-            .ok();
-        dmx.set_mx106_profile_acceleration(id, 10)
-            .map_err(|e| rprintln!("set profile aceleration err: {:?}", e))
-            .ok();
-        dmx.set_mx106_profile_velocity(id, 1000)
-            .map_err(|e| rprintln!("set profile velocity err: {:?}", e))
-            .ok();
-        dmx.set_mx106_goal_position(id, goal)
-            .map_err(|e| rprintln!("set goal position err: {:?}", e))
-            .ok();
-
-        while distance_u32(goal, dmx.get_mx106_present_position(id).unwrap()) > 10 {
+        loop {
+            let pose = dmx.get_mx106_present_position(id);
+            rprintln!("get present_position : {:?}", pose);
+            if distance_u32(goal, pose.unwrap()) < 10 {
+                break;
+            }
             block!(timer.wait()).ok();
         }
 
-        dmx.set_mx106_torque_enable(id, 0)
-            .map_err(|e| rprintln!("set torque enable err: {:?}", e))
-            .ok();
-        dmx.set_mx106_led(id, 0)
-            .map_err(|e| rprintln!("set led err: {:?}", e))
-            .ok();
-        rprintln!("torque enable {:?}", dmx.get_mx106_torque_enable(id));
-        rprintln!("present position {:?}", dmx.get_mx106_present_position(id));
-        rprintln!("goal position {:?}", dmx.get_mx106_goal_position(id));
+        rprintln!(
+            "set torque enable {}: {:?}",
+            0,
+            dmx.set_mx106_torque_enable(id, 0)
+        );
+        rprintln!("set led {}: {:?}", 0, dmx.set_mx106_led(id, 0));
+        rprintln!("get torque enable {:?}", dmx.get_mx106_torque_enable(id));
+        rprintln!(
+            "get present position {:?}",
+            dmx.get_mx106_present_position(id)
+        );
+        rprintln!("get goal position {:?}", dmx.get_mx106_goal_position(id));
 
         timer.reset();
         block!(timer.wait()).ok();
