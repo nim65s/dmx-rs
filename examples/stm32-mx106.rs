@@ -53,7 +53,7 @@ fn main() -> ! {
     let mut i = false;
 
     loop {
-        //rprintln!("ping {}", dmx.ping(1));
+        rprintln!("ping {}", dmx.ping(1));
         rprintln!("get torque enable: {:?}", dmx.get_mx106_torque_enable(id));
         rprintln!(
             "get present position: {:?}",

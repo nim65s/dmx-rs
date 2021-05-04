@@ -61,6 +61,6 @@ pub trait Protocol<Error> {
 
     fn ping(&mut self, id: u8) -> bool {
         self.send(id, Instruction::Ping, &[]);
-        self.recv::<0>().is_ok()
+        self.recv::<3>().is_ok()
     }
 }
