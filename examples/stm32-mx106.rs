@@ -67,7 +67,7 @@ fn main() -> ! {
             .map_err(|e| rprintln!("set led err: {:?}", e))
             .ok();
 
-        let goal: u32 = if i { 3000 } else { 2000 };
+        let goal: u32 = if i { 2500 } else { 2000 };
         i = !i;
 
         if let Err(e) = dmx.set_mx106_velocity_limit(id, 1) {
@@ -77,10 +77,10 @@ fn main() -> ! {
         dmx.set_mx106_velocity_limit(id, 1)
             .map_err(|e| rprintln!("set velocity err: {:?}", e))
             .ok();
-        dmx.set_mx106_profile_acceleration(id, 10)
+        dmx.set_mx106_profile_acceleration(id, 1)
             .map_err(|e| rprintln!("set profile aceleration err: {:?}", e))
             .ok();
-        dmx.set_mx106_profile_velocity(id, 1000)
+        dmx.set_mx106_profile_velocity(id, 100)
             .map_err(|e| rprintln!("set profile velocity err: {:?}", e))
             .ok();
         dmx.set_mx106_goal_position(id, goal)

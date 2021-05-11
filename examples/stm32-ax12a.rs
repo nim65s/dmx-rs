@@ -87,7 +87,7 @@ fn main() -> ! {
     rprintln!(
         "moving speed {}: {:?}",
         100,
-        dmx.set_ax12a_moving_speed(id, 100)
+        dmx.set_ax12a_moving_speed(id, 30)
     );
     sleep_ms(&mut timer, 10);
 
