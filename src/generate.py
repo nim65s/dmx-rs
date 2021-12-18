@@ -8,7 +8,6 @@ from pathlib import Path
 from subprocess import run
 
 HEAD = """
-use crate::convert::*;
 use crate::protocol::{Controller, Instruction, Protocol, Response};
 use embedded_hal::{digital::v2::OutputPin, serial};
 
@@ -50,14 +49,14 @@ def generate(address, size, data_name, description, access, initial_value, mini=
         '    }'
         '    if self.n_recv() == 2 { self.recv::<4>()?; }'
         f'    let params = self.recv::<{size}>()?.params;',
-        f'    Ok(bytes_to_u{size * 8}(&params))',
+        f'    Ok(u{size * 8}::from_le_bytes(params))',
         '}',
     ]
     if access == 'RW':
         params = ', '.join(f'params[{i}]' for i in range(size))
         lines += [
             f'fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Self::Error> {{',
-            f'    let params = u{size * 8}_to_bytes(params);', '    if PROTOCOL_VERSION == 1 {',
+            f'    let params = params.to_le_bytes();', '    if PROTOCOL_VERSION == 1 {',
             f'        self.send(id, Instruction::Write, &[{address[0]}, {params}]);', '    } else {',
             f'        self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, {params}]);', '    }',
             f'    if self.n_recv() == 2 {{ self.recv::<{ 2 + size }>()?; }}'
