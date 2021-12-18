@@ -92,5 +92,5 @@ if __name__ == '__main__':
     for serie in Path('../emanual/docs/en/dxl/').iterdir():
         if serie.is_dir() and serie.name != 'p':
             for motor in serie.iterdir():
-                if motor.name not in ['2xc430-w250.md', '2xl430-w250.md']:
+                if motor.name not in ['2xc430-w250.md', '2xl430-w250.md', 'x.md', 'pro.md']:
                     main(motor)
