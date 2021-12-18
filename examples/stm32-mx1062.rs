@@ -5,7 +5,7 @@
 use cortex_m_rt::entry;
 use dmx::{
     convert::distance_u32,
-    mx106::MX106,
+    mx1062::mx1062,
     protocol::{Controller, Protocol},
 };
 use nb::block;
@@ -33,7 +33,7 @@ fn main() -> ! {
     // Initialize debugger
     rtt_init_print!();
     rprintln!("rprintln ok");
-    rprintln!("Connecting to MX106 ID {} @ {}", id, baudrate);
+    rprintln!("Connecting to mx1062 ID {} @ {}", id, baudrate);
 
     // Initialize dynamixel on PA2-4
     let tx = gpioa.pa2.into_alternate_push_pull(&mut gpioa.crl);
@@ -54,23 +54,23 @@ fn main() -> ! {
 
     loop {
         rprintln!("ping {}", dmx.ping(1));
-        rprintln!("get torque enable: {:?}", dmx.get_mx106_torque_enable(id));
+        rprintln!("get torque enable: {:?}", dmx.get_mx1062_torque_enable(id));
         rprintln!(
             "get present position: {:?}",
-            dmx.get_mx106_present_position(id)
+            dmx.get_mx1062_present_position(id)
         );
-        rprintln!("get goal position: {:?}", dmx.get_mx106_goal_position(id));
+        rprintln!("get goal position: {:?}", dmx.get_mx1062_goal_position(id));
         rprintln!(
             "set operationg mode {}: {:?}",
             4,
-            dmx.set_mx106_operating_mode(id, 4)
+            dmx.set_mx1062_operating_mode(id, 4)
         );
         rprintln!(
             "set torque enable {}: {:?}",
             1,
-            dmx.set_mx106_torque_enable(id, 1)
+            dmx.set_mx1062_torque_enable(id, 1)
         );
-        rprintln!("set led {}: {:?}", 1, dmx.set_mx106_led(id, 1));
+        rprintln!("set led {}: {:?}", 1, dmx.set_mx1062_led(id, 1));
 
         let goal: u32 = if i { 3000 } else { 2000 };
         i = !i;
@@ -78,26 +78,26 @@ fn main() -> ! {
         rprintln!(
             "set velocity limit {}: {:?}",
             1,
-            dmx.set_mx106_velocity_limit(id, 1)
+            dmx.set_mx1062_velocity_limit(id, 1)
         );
         rprintln!(
             "set profile acceleration {}: {:?}",
             10,
-            dmx.set_mx106_profile_acceleration(id, 10)
+            dmx.set_mx1062_profile_acceleration(id, 10)
         );
         rprintln!(
             "set profile velocity {}: {:?}",
             1000,
-            dmx.set_mx106_profile_velocity(id, 1000)
+            dmx.set_mx1062_profile_velocity(id, 1000)
         );
         rprintln!(
             "set goal position {}: {:?}",
             goal,
-            dmx.set_mx106_goal_position(id, goal)
+            dmx.set_mx1062_goal_position(id, goal)
         );
 
         loop {
-            let pose = dmx.get_mx106_present_position(id);
+            let pose = dmx.get_mx1062_present_position(id);
             rprintln!("get present_position : {:?}", pose);
             if distance_u32(goal, pose.unwrap()) < 10 {
                 break;
@@ -108,15 +108,15 @@ fn main() -> ! {
         rprintln!(
             "set torque enable {}: {:?}",
             0,
-            dmx.set_mx106_torque_enable(id, 0)
+            dmx.set_mx1062_torque_enable(id, 0)
         );
-        rprintln!("set led {}: {:?}", 0, dmx.set_mx106_led(id, 0));
-        rprintln!("get torque enable {:?}", dmx.get_mx106_torque_enable(id));
+        rprintln!("set led {}: {:?}", 0, dmx.set_mx1062_led(id, 0));
+        rprintln!("get torque enable {:?}", dmx.get_mx1062_torque_enable(id));
         rprintln!(
             "get present position {:?}",
-            dmx.get_mx106_present_position(id)
+            dmx.get_mx1062_present_position(id)
         );
-        rprintln!("get goal position {:?}", dmx.get_mx106_goal_position(id));
+        rprintln!("get goal position {:?}", dmx.get_mx1062_goal_position(id));
 
         timer.reset();
         block!(timer.wait()).ok();
