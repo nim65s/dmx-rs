@@ -42,7 +42,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
     data_name = data_name.replace(' ', '_').lower()
     lines = [
         f'/// {description} (initial: {initial_value})',
-        f'pub fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Self::Error> {{',
+        f'fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Self::Error> {{',
         '    if PROTOCOL_VERSION == 1 {',
         f'        self.send(id, Instruction::Read, &[{address[0]}, {size_t[0]}]);',
         '    } else {'
@@ -56,7 +56,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
     if access == 'RW':
         params = ', '.join(f'params[{i}]' for i in range(size))
         lines += [
-            f'pub fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Self::Error> {{',
+            f'fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Self::Error> {{',
             f'    let params = u{size * 8}_to_bytes(params);', '    if PROTOCOL_VERSION == 1 {',
             f'        self.send(id, Instruction::Write, &[{address[0]}, {params}]);', '    } else {',
             f'        self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, {params}]);', '    }',
