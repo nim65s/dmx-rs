@@ -66,8 +66,7 @@ def generate(address, size, data_name, description, access, initial_value, mini=
         print(line, file=out)
 
 
-def main(motor: Path):
-    motor_name = motor.stem.replace('-', '').replace('+', 'plus')
+def main(motor: Path, motor_name: str):
     generated = f'generated/{motor_name}.rs'
     with motor.open() as mdfile, open(generated, 'w') as rsfile:
         print(HEAD.replace('MOTOR', motor_name.upper()), file=rsfile)
@@ -89,8 +88,11 @@ def main(motor: Path):
 
 
 if __name__ == '__main__':
-    for serie in Path('../emanual/docs/en/dxl/').iterdir():
-        if serie.is_dir() and serie.name != 'p':
-            for motor in serie.iterdir():
-                if motor.name not in ['2xc430-w250.md', '2xl430-w250.md', 'x.md', 'pro.md']:
-                    main(motor)
+    with open('generated/mod.rs', 'w') as mod:
+        for serie in Path('../emanual/docs/en/dxl/').iterdir():
+            if serie.is_dir() and serie.name != 'p':
+                for motor in serie.iterdir():
+                    if motor.name not in ['2xc430-w250.md', '2xl430-w250.md', 'x.md', 'pro.md']:
+                        motor_name = motor.stem.replace('_', '').replace('-', '').replace('+', 'plus')
+                        main(motor, motor_name)
+                        print(f'pub mod {motor_name};', file=mod)
