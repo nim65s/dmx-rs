@@ -67,8 +67,9 @@ def generate(address, size, data_name, description, access, initial_value, mini=
 
 
 def main(motor: Path):
-    motor_name = motor.stem.replace('-', '_').replace('+', '_plus')
-    with motor.open() as mdfile, open(f'generated/{motor_name}.rs', 'w') as rsfile:
+    motor_name = motor.stem.replace('-', '').replace('+', 'plus')
+    generated = f'generated/{motor_name}.rs'
+    with motor.open() as mdfile, open(generated, 'w') as rsfile:
         print(HEAD.replace('MOTOR', motor_name.upper()), file=rsfile)
         state, data = 0, False
         for line in mdfile:
@@ -84,7 +85,7 @@ def main(motor: Path):
             if state > 0 and data and not any(symbol in line for symbol in ['---', '...', '…']):
                 generate(*(item.strip() for item in line.split('|')[1:-1]), motor=motor_name, out=rsfile)
         print(TAIL.replace('MOTOR', motor_name.upper()), file=rsfile)
-    run(['rustfmt', f'{motor_name}.rs'])
+    run(['rustfmt', generated])
 
 
 if __name__ == '__main__':
