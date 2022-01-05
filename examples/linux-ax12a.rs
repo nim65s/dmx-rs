@@ -32,15 +32,19 @@ fn main() {
     let dummy_pin = DummyPin::new_low();
     let mut dmx = Controller::new_1(serial, dummy_pin, 0);
 
+    println!("auto ping: {}", dmx.ping(id));
+
+    println!("manual ping:");
     dmx.send(id, Instruction::Ping, &[]);
-    println!("recv: {:?}", dmx.recv());
-    println!("recv: {:?}", dmx.recv());
+    println!("recv: {:?}", dmx.recv::<0>());
+    println!("recv: {:?}", dmx.recv::<0>());
 
+    println!("manual read:");
     dmx.send(id, Instruction::Read, &[36, 2]);
-    println!("recv: {:?}", dmx.recv());
-    println!("recv: {:?}", dmx.recv());
+    println!("recv: {:?}", dmx.recv::<2>());
+    println!("recv: {:?}", dmx.recv::<2>());
 
-    //println!("get pose: {:?}", dmx.get_ax12a_present_position(id));
+    println!("get pose: {:?}", dmx.get_ax12a_present_position(id));
 
     for led in 0..6 {
         println!("set led {}: {:?}", led % 2, dmx.set_ax12a_led(id, led % 2));
