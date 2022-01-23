@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
 import asyncio
+import shutil
+import string
 
 from aioserial import AioSerial
 from aioconsole import ainput
+
+PRINTABLES = set(string.printable) - set(string.whitespace)
 
 
 def crc16(data, accum=0):
@@ -82,9 +86,26 @@ def protocol_2(data):
     return data + u16_to_bytes(crc16(data))
 
 
+def show(i: int, end: bool = False) -> str:
+    """
+    Show an byte, in decimal, hexadecimal, and ascii
+    aligned inj the center or the end of the line
+    """
+    h = hex(i)
+    if len(h) == 3:  # add padding
+        h = f"0x0{h[-1]}"
+    c = chr(i)
+    if c not in PRINTABLES:
+        c = ' '
+    ret = f"{i:3} {h} {c}"
+    w = shutil.get_terminal_size((80, 20)).columns - 1
+    print(f"←{ret:>{w}}" if end else f"→{ret:^{w}}")
+
+
 class Debug:
+
     def __init__(self):
-        self.serial = AioSerial(port='/dev/ttyACM0', baudrate=115_200)
+        self.serial = AioSerial(port='/dev/ttyUSB0', baudrate=115_200)
 
     async def write(self):
         while True:
@@ -95,12 +116,14 @@ class Debug:
             elif data[0] == 2:
                 data = protocol_2(data[1:])
             await self.serial.write_async(data)
+            for d in data:
+                show(d)
 
     async def read(self):
         while True:
             data = await self.serial.read_async(1)
             data = int.from_bytes(data, 'big')
-            print("Received byte: ", hex(data), data)
+            show(data, True)
 
     async def run(self):
         await asyncio.gather(self.write(), self.read())
