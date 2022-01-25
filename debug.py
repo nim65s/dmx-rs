@@ -3,6 +3,7 @@
 import asyncio
 import shutil
 import string
+import sys
 
 from aioserial import AioSerial
 from aioconsole import ainput
@@ -104,29 +105,65 @@ def show(i: int, end: bool = False) -> str:
 
 class Debug:
 
-    def __init__(self):
-        self.serial = AioSerial(port='/dev/ttyUSB0', baudrate=115_200)
+    def __init__(self, baudrate=1_000_000, ignore_same=True):
+        self.serial = AioSerial(port='/dev/ttyUSB0', baudrate=baudrate, timeout=0.01, cancel_read_timeout=0.1)
+        self.loop = True
+        self.ignore_same = True
+        self.sent = None
+        self.ready = False
 
-    async def write(self):
-        while True:
+    async def write(self, data: str):
+        data = [int(i, base=16) & 0xFF for i in data.split()]
+        if data[0] == 1:
+            data = protocol_1(data[1:])
+        elif data[0] == 2:
+            data = protocol_2(data[1:])
+        await self.serial.write_async(data)
+        for d in data:
+            show(d)
+            await self.sent.put(d)
+
+    async def keyboard(self):
+        while self.loop:
             data = await ainput()
-            data = [int(i, base=16) & 0xFF for i in data.split()]
-            if data[0] == 1:
-                data = protocol_1(data[1:])
-            elif data[0] == 2:
-                data = protocol_2(data[1:])
-            await self.serial.write_async(data)
-            for d in data:
-                show(d)
+            if data.lower().startswith('q'):
+                await self.quit()
+            else:
+                await self.write(data)
+
+    async def auto(self, data):
+        await self.write(data)
+        await asyncio.sleep(0.01)
+        await self.quit()
 
     async def read(self):
-        while True:
+        while self.loop:
             data = await self.serial.read_async(1)
             data = int.from_bytes(data, 'big')
-            show(data, True)
+            try:
+                q = self.sent.get_nowait()
+                if q == data:
+                    print('⇔')
+                else:
+                    print('old:', q)
+                    show(data, True)
 
-    async def run(self):
-        await asyncio.gather(self.write(), self.read())
+            except asyncio.QueueEmpty:
+                show(data, True)
+
+    async def quit(self):
+        print('exiting...')
+        self.loop = False
+
+    async def run(self, data=''):
+        self.sent = asyncio.Queue()
+        self.loop = True
+        while self.serial.read():
+            print('…')
+        if data:
+            await asyncio.gather(self.read(), self.auto(data))
+        else:
+            await asyncio.gather(self.read(), self.keyboard())
 
 
 if __name__ == '__main__':
@@ -135,4 +172,4 @@ if __name__ == '__main__':
     print('xl320 led 3: 2 1 6 0 3 19 0 3')
     print('ax12a led 0: 1 1 4 3 19 0')
     print('ax12a led 1: 1 1 4 3 19 1')
-    asyncio.run(Debug().run())
+    asyncio.run(Debug().run(' '.join(sys.argv[1:])))
