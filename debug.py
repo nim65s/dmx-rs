@@ -1,4 +1,17 @@
 #!/usr/bin/env python
+"""
+
+TODO
+
+AX-12A
+115200
+ID 1
+
+PING: FF FF 1 2 1 FB
+PONG: FF FF 1 2 0 FC
+LED  ON: FF FF 1 4 3 19 1 DD
+LED OFF: FF FF 1 4 3 19 0 DE
+"""
 
 import asyncio
 import shutil
@@ -105,11 +118,9 @@ def show(i: int, end: bool = False) -> str:
 
 class Debug:
 
-    def __init__(self, baudrate=1_000_000, ignore_same=True):
-        self.serial = AioSerial(port='/dev/ttyUSB0', baudrate=baudrate, timeout=0.01, cancel_read_timeout=0.1)
+    def __init__(self, baudrate=115_200):
+        self.serial = AioSerial(port='/dev/ttyACM0', baudrate=baudrate, timeout=1, cancel_read_timeout=0.1)
         self.loop = True
-        self.ignore_same = True
-        self.sent = None
         self.ready = False
 
     async def write(self, data: str):
@@ -121,7 +132,6 @@ class Debug:
         await self.serial.write_async(data)
         for d in data:
             show(d)
-            await self.sent.put(d)
 
     async def keyboard(self):
         while self.loop:
@@ -132,31 +142,22 @@ class Debug:
                 await self.write(data)
 
     async def auto(self, data):
+        await asyncio.sleep(1)
         await self.write(data)
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(2)
         await self.quit()
 
     async def read(self):
         while self.loop:
             data = await self.serial.read_async(1)
             data = int.from_bytes(data, 'big')
-            try:
-                q = self.sent.get_nowait()
-                if q == data:
-                    print('⇔')
-                else:
-                    print('old:', q)
-                    show(data, True)
-
-            except asyncio.QueueEmpty:
-                show(data, True)
+            show(data, True)
 
     async def quit(self):
         print('exiting...')
         self.loop = False
 
     async def run(self, data=''):
-        self.sent = asyncio.Queue()
         self.loop = True
         while self.serial.read():
             print('…')
