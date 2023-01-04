@@ -2,7 +2,7 @@ use crate::protocol::{Controller, Instruction, Protocol, Response};
 use embedded_hal::{digital::v2::OutputPin, serial};
 
 pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
-    /// R (initial: -)
+    /// [Model Number](#model-number) (initial: 53,769)
     fn get_h54100s500ra_model_number(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[0, 2]);
@@ -15,7 +15,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Model Information](#model-information) (initial: -)
     fn get_h54100s500ra_model_information(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[2, 4]);
@@ -28,7 +28,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Firmware Version](#firmware-version) (initial: -)
     fn get_h54100s500ra_firmware_version(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[6, 1]);
@@ -41,7 +41,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 252)
+    /// [ID](#id) (initial: 1)
     fn get_h54100s500ra_id(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[7, 1]);
@@ -54,7 +54,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 9)
+    fn set_h54100s500ra_id(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[7, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[7, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Baud Rate](#baud-rate) (initial: 1)
     fn get_h54100s500ra_baud_rate(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[8, 1]);
@@ -67,7 +87,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_baud_rate(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[8, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[8, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Return Delay Time](#return-delay-time) (initial: 250)
     fn get_h54100s500ra_return_delay_time(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[9, 1]);
@@ -80,7 +120,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 1)
+    fn set_h54100s500ra_return_delay_time(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[9, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[9, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Drive Mode](#drive-mode) (initial: 0)
     fn get_h54100s500ra_drive_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[10, 1]);
@@ -93,7 +153,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0, 1, 3, 4, 16)
+    fn set_h54100s500ra_drive_mode(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[10, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[10, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Operating Mode](#operating-mode) (initial: 3)
     fn get_h54100s500ra_operating_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[11, 1]);
@@ -106,7 +186,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_operating_mode(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[11, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[11, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Secondary ID](#secondary-id) (initial: 255)
     fn get_h54100s500ra_secondary_id(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[12, 1]);
@@ -119,7 +219,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: -2,147,483,648 ~<br> 2,147,483,647)
+    fn set_h54100s500ra_secondary_id(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[12, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[12, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Homing Offset](#homing-offset) (initial: 0)
     fn get_h54100s500ra_homing_offset(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[20, 4]);
@@ -132,7 +252,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 2,920)
+    fn set_h54100s500ra_homing_offset(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[20, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[20, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Moving Threshold](#moving-threshold) (initial: 50)
     fn get_h54100s500ra_moving_threshold(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[24, 4]);
@@ -145,7 +293,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 100)
+    fn set_h54100s500ra_moving_threshold(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[24, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[24, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Temperature Limit](#temperature-limit) (initial: 80)
     fn get_h54100s500ra_temperature_limit(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[31, 1]);
@@ -158,7 +334,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 150 ~ 350)
+    fn set_h54100s500ra_temperature_limit(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[31, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[31, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Max Voltage Limit](#max-voltage-limit) (initial: 350)
     fn get_h54100s500ra_max_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[32, 2]);
@@ -171,7 +367,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 150 ~ 350)
+    fn set_h54100s500ra_max_voltage_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[32, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Min Voltage Limit](#min-voltage-limit) (initial: 150)
     fn get_h54100s500ra_min_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[34, 2]);
@@ -184,7 +400,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 2,009)
+    fn set_h54100s500ra_min_voltage_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[34, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [PWM Limit](#pwm-limit) (initial: 2,009)
     fn get_h54100s500ra_pwm_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[36, 2]);
@@ -197,7 +433,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 15,900)
+    fn set_h54100s500ra_pwm_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[36, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[36, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Current Limit](#current-limit) (initial: 15,900)
     fn get_h54100s500ra_current_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[38, 2]);
@@ -210,7 +466,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 4,255,632)
+    fn set_h54100s500ra_current_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[38, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[38, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Acceleration Limit](#acceleration-limit) (initial: 10,639)
     fn get_h54100s500ra_acceleration_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[40, 4]);
@@ -223,7 +499,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 2,920)
+    fn set_h54100s500ra_acceleration_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[40, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[40, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Velocity Limit](#velocity-limit) (initial: 2,920)
     fn get_h54100s500ra_velocity_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[44, 4]);
@@ -236,7 +540,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: -501,923 ~<br> 501,923)
+    fn set_h54100s500ra_velocity_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[44, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[44, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Max Position Limit](#max-position-limit) (initial: 501,433)
     fn get_h54100s500ra_max_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[48, 4]);
@@ -249,7 +581,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: -501,923 ~<br> 501,923)
+    fn set_h54100s500ra_max_position_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[48, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[48, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Min Position Limit](#min-position-limit) (initial: -501,433)
     fn get_h54100s500ra_min_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[52, 4]);
@@ -262,7 +622,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 3)
+    fn set_h54100s500ra_min_position_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[52, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[52, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [External Port Mode 1](#external-port-mode) (initial: 3)
     fn get_h54100s500ra_external_port_mode_1(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[56, 1]);
@@ -275,7 +663,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 3)
+    fn set_h54100s500ra_external_port_mode_1(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[56, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[56, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [External Port Mode 2](#external-port-mode) (initial: 3)
     fn get_h54100s500ra_external_port_mode_2(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[57, 1]);
@@ -288,7 +696,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 3)
+    fn set_h54100s500ra_external_port_mode_2(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[57, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[57, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [External Port Mode 3](#external-port-mode) (initial: 3)
     fn get_h54100s500ra_external_port_mode_3(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[58, 1]);
@@ -301,7 +729,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 3)
+    fn set_h54100s500ra_external_port_mode_3(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[58, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[58, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [External Port Mode 4](#external-port-mode) (initial: 3)
     fn get_h54100s500ra_external_port_mode_4(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[59, 1]);
@@ -314,7 +762,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_external_port_mode_4(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[59, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[59, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Shutdown](#shutdown) (initial: 52)
     fn get_h54100s500ra_shutdown(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[63, 1]);
@@ -327,7 +795,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 512 ~ 1,023)
+    fn set_h54100s500ra_shutdown(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[63, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[63, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 1](#indirect-address) (initial: 634)
     fn get_h54100s500ra_indirect_address_1(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[168, 2]);
@@ -340,7 +828,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 512 ~ 1,023)
+    fn set_h54100s500ra_indirect_address_1(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[168, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[168, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 2](#indirect-address) (initial: 635)
     fn get_h54100s500ra_indirect_address_2(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[170, 2]);
@@ -353,7 +861,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 512 ~ 1,023)
+    fn set_h54100s500ra_indirect_address_2(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[170, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[170, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 3](#indirect-address) (initial: 636)
     fn get_h54100s500ra_indirect_address_3(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[172, 2]);
@@ -366,7 +894,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 512 ~ 1,023)
+    fn set_h54100s500ra_indirect_address_3(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[172, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[172, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 128](#indirect-address) (initial: 761)
     fn get_h54100s500ra_indirect_address_128(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[166, 2]);
@@ -379,7 +927,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 1)
+    fn set_h54100s500ra_indirect_address_128(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[166, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[166, 1, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Torque Enable](#torque-enable) (initial: 0)
     fn get_h54100s500ra_torque_enable(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[0, 1]);
@@ -392,7 +960,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_torque_enable(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[0, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[0, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [LED Red](#led) (initial: 0)
     fn get_h54100s500ra_led_red(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[1, 1]);
@@ -405,7 +993,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_led_red(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[1, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[1, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [LED Green](#led) (initial: 0)
     fn get_h54100s500ra_led_green(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[2, 1]);
@@ -418,7 +1026,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_led_green(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[2, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[2, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [LED Blue](#led) (initial: 0)
     fn get_h54100s500ra_led_blue(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[3, 1]);
@@ -431,7 +1059,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 2)
+    fn set_h54100s500ra_led_blue(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[3, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[3, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Status Return Level](#status-return-level) (initial: 2)
     fn get_h54100s500ra_status_return_level(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[4, 1]);
@@ -444,7 +1092,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: -)
+    fn set_h54100s500ra_status_return_level(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[4, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[4, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Registered Instruction](#registered-instruction) (initial: 0)
     fn get_h54100s500ra_registered_instruction(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[5, 1]);
@@ -457,7 +1125,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Hardware Error Status](#hardware-error-status) (initial: 0)
     fn get_h54100s500ra_hardware_error_status(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[6, 1]);
@@ -470,7 +1138,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    /// [Velocity I Gain](#velocity-i-gain) (initial: -)
     fn get_h54100s500ra_velocity_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[12, 2]);
@@ -483,7 +1151,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    fn set_h54100s500ra_velocity_i_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[12, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[12, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Velocity P Gain](#velocity-p-gain) (initial: -)
     fn get_h54100s500ra_velocity_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[14, 2]);
@@ -496,7 +1184,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    fn set_h54100s500ra_velocity_p_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[14, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[14, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Position D Gain](#position-p-gain) (initial: -)
     fn get_h54100s500ra_position_d_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[16, 2]);
@@ -509,7 +1217,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    fn set_h54100s500ra_position_d_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[16, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[16, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Position P Gain](#position-p-gain) (initial: -)
     fn get_h54100s500ra_position_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[20, 2]);
@@ -522,7 +1250,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    fn set_h54100s500ra_position_p_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[20, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[20, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Position I Gain](#position-p-gain) (initial: -)
     fn get_h54100s500ra_position_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[18, 2]);
@@ -535,7 +1283,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    fn set_h54100s500ra_position_i_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[18, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[18, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Feedforward 2nd Gain](#feedforward-2nd-gain) (initial: -)
     fn get_h54100s500ra_feedforward_2nd_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[24, 2]);
@@ -548,7 +1316,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    fn set_h54100s500ra_feedforward_2nd_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[24, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[24, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Feedforward 1st Gain](#feedforward-1st-gain) (initial: -)
     fn get_h54100s500ra_feedforward_1st_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[26, 2]);
@@ -561,7 +1349,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 127)
+    fn set_h54100s500ra_feedforward_1st_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[26, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[26, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Bus Watchdog](#bus-watchdog) (initial: -)
     fn get_h54100s500ra_bus_watchdog(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[34, 1]);
@@ -574,7 +1382,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: -PWM Limit(36) ~<br> PWM Limit(36))
+    fn set_h54100s500ra_bus_watchdog(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[34, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[34, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Goal PWM](#goal-pwm) (initial: -)
     fn get_h54100s500ra_goal_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[36, 2]);
@@ -587,7 +1415,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: -Current Limit(38) ~<br> Current Limit(38))
+    fn set_h54100s500ra_goal_pwm(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[36, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[36, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Goal Current](#goal-current) (initial: -)
     fn get_h54100s500ra_goal_current(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[38, 2]);
@@ -600,7 +1448,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: -Velocity Limit(44) ~<br> Velocity Limit(44))
+    fn set_h54100s500ra_goal_current(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[38, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[38, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Goal Velocity](#goal-velocity) (initial: -)
     fn get_h54100s500ra_goal_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[40, 4]);
@@ -613,7 +1481,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~<br> Acceleration Limit(40))
+    fn set_h54100s500ra_goal_velocity(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[40, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[40, 2, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Profile Acceleration](#profile-acceleration) (initial: -)
     fn get_h54100s500ra_profile_acceleration(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[44, 4]);
@@ -626,7 +1522,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~<br> Velocity Limit(44))
+    fn set_h54100s500ra_profile_acceleration(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[44, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[44, 2, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Profile Velocity](#profile-velocity) (initial: -)
     fn get_h54100s500ra_profile_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[48, 4]);
@@ -639,7 +1563,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: Min Position Limit(52) ~<br> Max Position Limit(48))
+    fn set_h54100s500ra_profile_velocity(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[48, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[48, 2, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Goal Position](#goal-position) (initial: -)
     fn get_h54100s500ra_goal_position(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[52, 4]);
@@ -652,7 +1604,35 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: 0 ~ 32,767)
+    fn set_h54100s500ra_goal_position(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[52, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[52, 2, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Realtime Tick](#realtime-tick) (initial: -)
     fn get_h54100s500ra_realtime_tick(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[56, 2]);
@@ -665,7 +1645,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Moving](#moving) (initial: -)
     fn get_h54100s500ra_moving(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[58, 1]);
@@ -678,7 +1658,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Moving Status](#moving-status) (initial: -)
     fn get_h54100s500ra_moving_status(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[59, 1]);
@@ -691,7 +1671,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present PWM](#present-pwm) (initial: -)
     fn get_h54100s500ra_present_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[60, 2]);
@@ -704,7 +1684,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Current](#present-current) (initial: -)
     fn get_h54100s500ra_present_current(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[62, 2]);
@@ -717,7 +1697,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Velocity](#present-velocity) (initial: -)
     fn get_h54100s500ra_present_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[64, 4]);
@@ -730,7 +1710,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Position](#present-position) (initial: -)
     fn get_h54100s500ra_present_position(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[68, 4]);
@@ -743,7 +1723,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Velocity Trajectory](#velocity-trajectory) (initial: -)
     fn get_h54100s500ra_velocity_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[72, 4]);
@@ -756,7 +1736,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Position Trajectory](#position-trajectory) (initial: -)
     fn get_h54100s500ra_position_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[76, 4]);
@@ -769,7 +1749,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Input Voltage](#present-input-voltage) (initial: -)
     fn get_h54100s500ra_present_input_voltage(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[80, 2]);
@@ -782,7 +1762,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Temperature](#present-temperature) (initial: -)
     fn get_h54100s500ra_present_temperature(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[82, 1]);
@@ -795,7 +1775,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R/RW (initial: 0 ~ 4,095)
+    /// [External Port Data 1](#external-port-data) (initial: 0)
     fn get_h54100s500ra_external_port_data_1(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[88, 2]);
@@ -808,7 +1788,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R/RW (initial: 0 ~ 4,095)
+    /// [External Port Data 2](#external-port-data) (initial: 0)
     fn get_h54100s500ra_external_port_data_2(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[90, 2]);
@@ -821,7 +1801,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R/RW (initial: 0 ~ 4,095)
+    /// [External Port Data 3](#external-port-data) (initial: 0)
     fn get_h54100s500ra_external_port_data_3(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[92, 2]);
@@ -834,7 +1814,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R/RW (initial: 0 ~ 4,095)
+    /// [External Port Data 4](#external-port-data) (initial: 0)
     fn get_h54100s500ra_external_port_data_4(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[94, 2]);
@@ -847,7 +1827,7 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    /// [Indirect Data 1](#indirect-data) (initial: 0)
     fn get_h54100s500ra_indirect_data_1(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[122, 1]);
@@ -860,7 +1840,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_indirect_data_1(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[122, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[122, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 2](#indirect-data) (initial: 0)
     fn get_h54100s500ra_indirect_data_2(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[123, 1]);
@@ -873,7 +1873,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_indirect_data_2(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[123, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[123, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 3](#indirect-data) (initial: 0)
     fn get_h54100s500ra_indirect_data_3(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[124, 1]);
@@ -886,7 +1906,27 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_h54100s500ra_indirect_data_3(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[124, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[124, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 128](#indirect-data) (initial: 0)
     fn get_h54100s500ra_indirect_data_128(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[249, 1]);
@@ -898,6 +1938,26 @@ pub trait H54100S500RA<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
+    }
+    fn set_h54100s500ra_indirect_data_128(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[249, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[249, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
     }
 }
 

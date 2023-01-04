@@ -2,7 +2,7 @@ use crate::protocol::{Controller, Instruction, Protocol, Response};
 use embedded_hal::{digital::v2::OutputPin, serial};
 
 pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
-    /// R (initial: -)
+    /// [Model Number]{: .popup} (initial: 1,060)
     fn get_xl430w250test_model_number(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[0, 2]);
@@ -15,7 +15,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// Model Information (initial: -)
     fn get_xl430w250test_odel_information(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[2, 4]);
@@ -28,7 +28,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Firmware Version]{: .popup} (initial: -)
     fn get_xl430w250test_firmware_version(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[6, 1]);
@@ -41,7 +41,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 252)
+    /// [ID]{: .popup} (initial: 1)
     fn get_xl430w250test_id(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[7, 1]);
@@ -54,7 +54,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 7)
+    fn set_xl430w250test_id(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[7, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[7, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Baud Rate]{: .popup} (initial: 1)
     fn get_xl430w250test_baud_rate(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[8, 1]);
@@ -67,7 +87,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 254)
+    fn set_xl430w250test_baud_rate(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[8, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[8, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Return Delay Time]{: .popup} (initial: 250)
     fn get_xl430w250test_return_delay_time(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[9, 1]);
@@ -80,7 +120,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 5)
+    fn set_xl430w250test_return_delay_time(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[9, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[9, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Drive Mode]{: .popup} (initial: 0)
     fn get_xl430w250test_drive_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[10, 1]);
@@ -93,7 +153,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16)
+    fn set_xl430w250test_drive_mode(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[10, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[10, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Operating Mode]{: .popup} (initial: 3)
     fn get_xl430w250test_operating_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[11, 1]);
@@ -106,7 +186,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 252)
+    fn set_xl430w250test_operating_mode(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[11, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[11, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Secondary(Shadow) ID]{: .popup} (initial: 255)
     fn get_xl430w250test_secondary_shadow_id(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[12, 1]);
@@ -119,7 +219,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 1 ~ 2)
+    fn set_xl430w250test_secondary_shadow_id(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[12, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[12, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Protocol Type]{: .popup} (initial: 2)
     fn get_xl430w250test_protocol_type(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[13, 1]);
@@ -132,7 +252,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: -1,044,479 ~ <br>1,044,479)
+    fn set_xl430w250test_protocol_type(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[13, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[13, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Homing Offset]{: .popup} (initial: 0)
     fn get_xl430w250test_homing_offset(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[20, 4]);
@@ -145,7 +285,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 1,023)
+    fn set_xl430w250test_homing_offset(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[20, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[20, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Moving Threshold]{: .popup} (initial: 10)
     fn get_xl430w250test_moving_threshold(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[24, 4]);
@@ -158,7 +326,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 100)
+    fn set_xl430w250test_moving_threshold(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[24, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[24, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Temperature Limit]{: .popup} (initial: 72)
     fn get_xl430w250test_temperature_limit(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[31, 1]);
@@ -171,7 +367,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 60 ~ 140)
+    fn set_xl430w250test_temperature_limit(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[31, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[31, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Max Voltage Limit]{: .popup} (initial: 140)
     fn get_xl430w250test_max_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[32, 2]);
@@ -184,7 +400,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 60 ~ 140)
+    fn set_xl430w250test_max_voltage_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[32, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Min Voltage Limit]{: .popup} (initial: 60)
     fn get_xl430w250test_min_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[34, 2]);
@@ -197,7 +433,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 885)
+    fn set_xl430w250test_min_voltage_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[34, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [PWM Limit]{: .popup} (initial: 885)
     fn get_xl430w250test_pwm_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[36, 2]);
@@ -210,7 +466,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 1,023)
+    fn set_xl430w250test_pwm_limit(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[36, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[36, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Velocity Limit]{: .popup} (initial: 265)
     fn get_xl430w250test_velocity_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[44, 4]);
@@ -223,7 +499,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 4,095)
+    fn set_xl430w250test_velocity_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[44, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[44, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Max Position Limit]{: .popup} (initial: 4,095)
     fn get_xl430w250test_max_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[48, 4]);
@@ -236,7 +540,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 4,095)
+    fn set_xl430w250test_max_position_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[48, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[48, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Min Position Limit]{: .popup} (initial: 0)
     fn get_xl430w250test_min_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[52, 4]);
@@ -249,7 +581,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: -)
+    fn set_xl430w250test_min_position_limit(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[52, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[52, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Shutdown]{: .popup} (initial: 52)
     fn get_xl430w250test_shutdown(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[63, 1]);
@@ -262,7 +622,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 1)
+    fn set_xl430w250test_shutdown(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[63, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[63, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Torque Enable](#torque-enable) (initial: 0)
     fn get_xl430w250test_torque_enable(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[64, 1]);
@@ -275,7 +655,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 1)
+    fn set_xl430w250test_torque_enable(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[64, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[64, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [LED](#led) (initial: 0)
     fn get_xl430w250test_led(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[65, 1]);
@@ -288,7 +688,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 2)
+    fn set_xl430w250test_led(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[65, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[65, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Status Return Level](#status-return-level) (initial: 2)
     fn get_xl430w250test_status_return_level(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[68, 1]);
@@ -301,7 +721,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: 0 ~ 1)
+    fn set_xl430w250test_status_return_level(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[68, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[68, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Registered Instruction](#registered-instruction) (initial: 0)
     fn get_xl430w250test_registered_instruction(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[69, 1]);
@@ -314,7 +754,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Hardware Error Status](#hardware-error-status) (initial: 0)
     fn get_xl430w250test_hardware_error_status(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[70, 1]);
@@ -327,7 +767,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16,383)
+    /// [Velocity I Gain](#velocity-i-gain) (initial: 1,000)
     fn get_xl430w250test_velocity_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[76, 2]);
@@ -340,7 +780,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16,383)
+    fn set_xl430w250test_velocity_i_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[76, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[76, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Velocity P Gain](#velocity-p-gain) (initial: 100)
     fn get_xl430w250test_velocity_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[78, 2]);
@@ -353,7 +813,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16,383)
+    fn set_xl430w250test_velocity_p_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[78, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[78, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Position D Gain](#position-d-gain) (initial: 4,000)
     fn get_xl430w250test_position_d_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[80, 2]);
@@ -366,7 +846,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16,383)
+    fn set_xl430w250test_position_d_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[80, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[80, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Position I Gain](#position-i-gain) (initial: 0)
     fn get_xl430w250test_position_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[82, 2]);
@@ -379,7 +879,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16,383)
+    fn set_xl430w250test_position_i_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[82, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[82, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Position P Gain](#position-p-gain) (initial: 640)
     fn get_xl430w250test_position_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[84, 2]);
@@ -392,7 +912,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16,383)
+    fn set_xl430w250test_position_p_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[84, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[84, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Feedforward 2nd Gain](#feedforward-2nd-gain) (initial: 0)
     fn get_xl430w250test_feedforward_2nd_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[88, 2]);
@@ -405,7 +945,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 16,383)
+    fn set_xl430w250test_feedforward_2nd_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[88, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[88, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Feedforward 1st Gain](#feedforward-1st-gain) (initial: 0)
     fn get_xl430w250test_feedforward_1st_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[90, 2]);
@@ -418,7 +978,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 1 ~ 127)
+    fn set_xl430w250test_feedforward_1st_gain(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[90, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[90, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Bus Watchdog](#bus-watchdog) (initial: 0)
     fn get_xl430w250test_bus_watchdog(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[98, 1]);
@@ -431,7 +1011,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: -PWM Limit(36) ~<br> PWM Limit(36))
+    fn set_xl430w250test_bus_watchdog(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[98, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[98, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Goal PWM](#goal-pwm) (initial: -)
     fn get_xl430w250test_goal_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[100, 2]);
@@ -444,7 +1044,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: -Velocity Limit(44) ~<br> Velocity Limit(44))
+    fn set_xl430w250test_goal_pwm(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[100, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[100, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Goal Velocity](#goal-velocity) (initial: -)
     fn get_xl430w250test_goal_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[104, 4]);
@@ -457,7 +1077,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767 <br> 0 ~ 32,737)
+    fn set_xl430w250test_goal_velocity(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[104, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[104, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Profile Acceleration](#profile-acceleration) (initial: 0)
     fn get_xl430w250test_profile_acceleration(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[108, 4]);
@@ -470,7 +1118,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 32,767)
+    fn set_xl430w250test_profile_acceleration(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[108, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[108, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Profile Velocity](#profile-velocity) (initial: 0)
     fn get_xl430w250test_profile_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[112, 4]);
@@ -483,7 +1159,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// RW (initial: Min Position Limit(52) ~<br> Max Position Limit(48))
+    fn set_xl430w250test_profile_velocity(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[112, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[112, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Goal Position](#goal-position) (initial: -)
     fn get_xl430w250test_goal_position(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[116, 4]);
@@ -496,7 +1200,35 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: 0 ~ 32,767)
+    fn set_xl430w250test_goal_position(
+        &mut self,
+        id: u8,
+        params: u32,
+    ) -> Result<Option<Response<4>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(
+                id,
+                Instruction::Write,
+                &[116, params[0], params[1], params[2], params[3]],
+            );
+        } else {
+            self.send(
+                id,
+                Instruction::Write,
+                &[116, 0, params[0], params[1], params[2], params[3]],
+            );
+        }
+        if self.n_recv() == 2 {
+            self.recv::<6>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<4>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Realtime Tick](#realtime-tick) (initial: -)
     fn get_xl430w250test_realtime_tick(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[120, 2]);
@@ -509,7 +1241,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: 0 ~ 1)
+    /// [Moving](#moving) (initial: 0)
     fn get_xl430w250test_moving(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[122, 1]);
@@ -522,7 +1254,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Moving Status](#moving-status) (initial: 0)
     fn get_xl430w250test_moving_status(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[123, 1]);
@@ -535,7 +1267,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present PWM](#present-pwm) (initial: -)
     fn get_xl430w250test_present_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[124, 2]);
@@ -548,7 +1280,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -1,000 ~ 1,000)
+    /// [Present Load](#present-load) (initial: -)
     fn get_xl430w250test_present_load(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[126, 2]);
@@ -561,7 +1293,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Velocity](#present-velocity) (initial: -)
     fn get_xl430w250test_present_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[128, 4]);
@@ -574,7 +1306,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Position](#present-position) (initial: -)
     fn get_xl430w250test_present_position(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[132, 4]);
@@ -587,7 +1319,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Velocity Trajectory](#velocity-trajectory) (initial: -)
     fn get_xl430w250test_velocity_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[136, 4]);
@@ -600,7 +1332,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Position Trajectory](#position-trajectory) (initial: -)
     fn get_xl430w250test_position_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[140, 4]);
@@ -613,7 +1345,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<4>()?.params;
         Ok(u32::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Input Voltage](#present-input-voltage) (initial: -)
     fn get_xl430w250test_present_input_voltage(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[144, 2]);
@@ -626,7 +1358,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// R (initial: -)
+    /// [Present Temperature](#present-temperature) (initial: -)
     fn get_xl430w250test_present_temperature(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[146, 1]);
@@ -639,7 +1371,7 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    /// [Indirect Address 1](#indirect-address) (initial: 224)
     fn get_xl430w250test_indirect_address_1(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[168, 2]);
@@ -652,7 +1384,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_1(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[168, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[168, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 2](#indirect-address) (initial: 225)
     fn get_xl430w250test_indirect_address_2(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[170, 2]);
@@ -665,7 +1417,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_2(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[170, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[170, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 3](#indirect-address) (initial: 226)
     fn get_xl430w250test_indirect_address_3(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[172, 2]);
@@ -678,7 +1450,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_3(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[172, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[172, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 26](#indirect-address) (initial: 249)
     fn get_xl430w250test_indirect_address_26(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[218, 2]);
@@ -691,7 +1483,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_26(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[218, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[218, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 27](#indirect-address) (initial: 250)
     fn get_xl430w250test_indirect_address_27(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[220, 2]);
@@ -704,7 +1516,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_27(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[220, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[220, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 28](#indirect-address) (initial: 251)
     fn get_xl430w250test_indirect_address_28(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[222, 2]);
@@ -717,7 +1549,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_address_28(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[222, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[222, 0, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 1](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_1(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[224, 1]);
@@ -730,7 +1582,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_1(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[224, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[224, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 2](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_2(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[225, 1]);
@@ -743,7 +1615,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_2(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[225, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[225, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 3](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_3(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[226, 1]);
@@ -756,7 +1648,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_3(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[226, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[226, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 26](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_26(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[249, 1]);
@@ -769,7 +1681,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_26(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[249, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[249, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 27](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_27(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[250, 1]);
@@ -782,7 +1714,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_27(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[250, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[250, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 28](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_28(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[251, 1]);
@@ -795,7 +1747,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_data_28(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[251, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[251, 0, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 29](#indirect-address) (initial: 634)
     fn get_xl430w250test_indirect_address_29(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[66, 2]);
@@ -808,7 +1780,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_29(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[66, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[66, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 30](#indirect-address) (initial: 635)
     fn get_xl430w250test_indirect_address_30(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[68, 2]);
@@ -821,7 +1813,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_30(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[68, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[68, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 31](#indirect-address) (initial: 636)
     fn get_xl430w250test_indirect_address_31(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[70, 2]);
@@ -834,7 +1846,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_31(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[70, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[70, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 54](#indirect-address) (initial: 659)
     fn get_xl430w250test_indirect_address_54(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[116, 2]);
@@ -847,7 +1879,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_54(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[116, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[116, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 55](#indirect-address) (initial: 660)
     fn get_xl430w250test_indirect_address_55(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[118, 2]);
@@ -860,7 +1912,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 64 ~ 661)
+    fn set_xl430w250test_indirect_address_55(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[118, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[118, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Address 56](#indirect-address) (initial: 661)
     fn get_xl430w250test_indirect_address_56(&mut self, id: u8) -> Result<u16, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[120, 2]);
@@ -873,7 +1945,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<2>()?.params;
         Ok(u16::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_address_56(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[120, params[0], params[1]]);
+        } else {
+            self.send(id, Instruction::Write, &[120, 2, params[0], params[1]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<4>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<2>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 29](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_29(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[122, 1]);
@@ -886,7 +1978,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_29(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[122, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[122, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 30](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_30(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[123, 1]);
@@ -899,7 +2011,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_30(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[123, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[123, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 31](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_31(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[124, 1]);
@@ -912,7 +2044,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_31(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[124, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[124, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 54](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_54(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[147, 1]);
@@ -925,7 +2077,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_54(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[147, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[147, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 55](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_55(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[148, 1]);
@@ -938,7 +2110,27 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
     }
-    /// RW (initial: 0 ~ 255)
+    fn set_xl430w250test_indirect_data_55(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[148, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[148, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
+    }
+    /// [Indirect Data 56](#indirect-data) (initial: 0)
     fn get_xl430w250test_indirect_data_56(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[149, 1]);
@@ -950,6 +2142,26 @@ pub trait XL430W250TEST<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> 
         }
         let params = self.recv::<1>()?.params;
         Ok(u8::from_le_bytes(params))
+    }
+    fn set_xl430w250test_indirect_data_56(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Self::Error> {
+        let params = params.to_le_bytes();
+        if PROTOCOL_VERSION == 1 {
+            self.send(id, Instruction::Write, &[149, params[0]]);
+        } else {
+            self.send(id, Instruction::Write, &[149, 2, params[0]]);
+        }
+        if self.n_recv() == 2 {
+            self.recv::<3>()?;
+        }
+        if self.n_recv() >= 1 {
+            Ok(Some(self.recv::<1>()?))
+        } else {
+            Ok(None)
+        }
     }
 }
 
