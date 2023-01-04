@@ -1,7 +1,7 @@
 use embedded_hal::{digital::v2::OutputPin, serial};
 
 #[repr(u8)]
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd)]
 pub enum Instruction {
     Ping = 0x01, // Instruction that checks whether the Packet has arrived to a device with the same ID as Packet ID
     Read = 0x02, // Instruction to read data from the Device
@@ -45,8 +45,8 @@ where
         serial: Serial,
         direction: Direction,
         n_recv: u8,
-    ) -> Controller<Serial, Direction, PROTOCOL_VERSION> {
-        Controller {
+    ) -> Self {
+        Self {
             serial,
             direction,
             n_recv,

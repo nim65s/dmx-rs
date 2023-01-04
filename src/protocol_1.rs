@@ -1,6 +1,6 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol1>
 
-use crate::protocol::*;
+use crate::protocol::{Controller, Instruction, Protocol, Response};
 use core::{fmt, num::Wrapping};
 use embedded_hal::{digital::v2::OutputPin, serial};
 use nb::block;
@@ -21,8 +21,8 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
-            Error1::Communication(_) => f.write_str("Serial read error"),
-            Error1::ChecksumError => f.write_str("Checksum error"),
+            Self::Communication(_) => f.write_str("Serial read error"),
+            Self::ChecksumError => f.write_str("Checksum error"),
         }
     }
 }
@@ -42,7 +42,7 @@ where
         let mut sumcheck = Wrapping(0);
 
         self.direction.set_high().ok();
-        for &b in HEADER.iter() {
+        for &b in &HEADER {
             block!(self.serial.write(b)).ok();
         }
         for &p in content.iter().chain(params) {
@@ -105,7 +105,7 @@ where
         serial: Serial,
         direction: Direction,
         n_recv: u8,
-    ) -> Controller<Serial, Direction, 1> {
-        Controller::new(serial, direction, n_recv)
+    ) -> Self {
+        Self::new(serial, direction, n_recv)
     }
 }

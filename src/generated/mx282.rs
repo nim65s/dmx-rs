@@ -774,7 +774,7 @@ pub trait MX282<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
             Ok(None)
         }
     }
-    /// REG_WRITE Instruction Flag (initial: 0)
+    /// `REG_WRITE` Instruction Flag (initial: 0)
     fn get_mx282_registered_instruction(&mut self, id: u8) -> Result<u8, Self::Error> {
         if PROTOCOL_VERSION == 1 {
             self.send(id, Instruction::Read, &[69, 1]);

@@ -1,14 +1,14 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol2>
 
-use crate::protocol::*;
-use core::{convert::Into, fmt};
+use crate::protocol::{Controller, Instruction, Protocol, Response};
+use core::fmt;
 use embedded_hal::{digital::v2::OutputPin, serial};
 use nb::block;
 
 const HEADER: [u8; 4] = [0xFF, 0xFF, 0xFD, 0x00];
 
 #[repr(u8)]
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd)]
 pub enum Status {
     ResultFail = 0x01,       // Failed to process the sent Instruction Packet
     InstructionError = 0x02, // Undefined Instruction has been used / Action has been used without Reg Write
@@ -20,17 +20,17 @@ pub enum Status {
     ProtocolError = 0x08, // An illegal status was received
 }
 
-impl Into<Status> for u8 {
-    fn into(self) -> Status {
-        match self {
-            0x01 => Status::ResultFail,
-            0x02 => Status::InstructionError,
-            0x03 => Status::CrcError,
-            0x04 => Status::DataRangeError,
-            0x05 => Status::DataLengthError,
-            0x06 => Status::DataLimitError,
-            0x07 => Status::AccessError,
-            _ => Status::ProtocolError,
+impl From<u8> for Status {
+    fn from(val: u8) -> Self {
+        match val {
+            0x01 => Self::ResultFail,
+            0x02 => Self::InstructionError,
+            0x03 => Self::CrcError,
+            0x04 => Self::DataRangeError,
+            0x05 => Self::DataLengthError,
+            0x06 => Self::DataLimitError,
+            0x07 => Self::AccessError,
+            _ => Self::ProtocolError,
         }
     }
 }
@@ -50,8 +50,8 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
-            Error2::Communication(_) => f.write_str("Serial read error"),
-            e => f.write_fmt(format_args!("{:?}", e)),
+            Self::Communication(_) => f.write_str("Serial read error"),
+            e => f.write_fmt(format_args!("{e:?}")),
         }
     }
 }
@@ -151,7 +151,7 @@ where
         serial: Serial,
         direction: Direction,
         n_recv: u8,
-    ) -> Controller<Serial, Direction, 2> {
-        Controller::new(serial, direction, n_recv)
+    ) -> Self {
+        Self::new(serial, direction, n_recv)
     }
 }
