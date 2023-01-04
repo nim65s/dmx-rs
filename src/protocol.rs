@@ -1,5 +1,6 @@
 use embedded_hal::{digital::v2::OutputPin, serial};
 
+#[repr(u8)]
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub enum Instruction {
     Ping = 0x01, // Instruction that checks whether the Packet has arrived to a device with the same ID as Packet ID
@@ -11,7 +12,7 @@ pub enum Instruction {
     Reboot = 0x08,       // Instruction to reboot the Device
     Clear = 0x10,        // Instruction to reset certain information
     ControlTableBackup = 0x20, // Instruction to store current Control Table status data to a Backup area or to restore EEPROM data.
-    StatusReturn = 0x55, // Return Instruction for the Instruction Packet
+    StatusReturn = 0x55,       // Return Instruction for the Instruction Packet
     SyncRead = 0x82, // For multiple devices, Instruction to read data from the same Address with the same length at once
     SyncWrite = 0x83, // For multiple devices, Instruction to write data on the same Address with the same length at once
     FastSyncRead = 0x8A, // For multiple devices, Instruction to read data from the same Address with the same length at once

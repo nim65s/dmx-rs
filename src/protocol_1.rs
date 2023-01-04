@@ -40,16 +40,16 @@ where
     fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]) {
         let content = [id, (params.len() + 2) as u8, instruction as u8];
         let mut sumcheck = Wrapping(0);
-        for &p in content.iter().chain(params) {
-            sumcheck += Wrapping(p)
-        }
-        let chksum = !(sumcheck.0);
 
-        // send data in half duplex
         self.direction.set_high().ok();
-        for &b in HEADER.iter().chain(&content).chain(params).chain(&[chksum]) {
+        for &b in HEADER.iter() {
             block!(self.serial.write(b)).ok();
         }
+        for &p in content.iter().chain(params) {
+            sumcheck += Wrapping(p);
+            block!(self.serial.write(p)).ok();
+        }
+        block!(self.serial.write(!(sumcheck.0))).ok();
         block!(self.serial.flush()).ok();
         self.direction.set_low().ok();
     }

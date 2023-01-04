@@ -7,6 +7,7 @@ use nb::block;
 
 const HEADER: [u8; 4] = [0xFF, 0xFF, 0xFD, 0x00];
 
+#[repr(u8)]
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub enum Status {
     ResultFail = 0x01,       // Failed to process the sent Instruction Packet
@@ -68,8 +69,8 @@ where
     fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]) {
         let content = [
             id,
-            (params.len() + 3) as u8,
-            ((params.len() + 3) >> 8) as u8,
+            ((params.len() + 3) & 0xFF) as u8,
+            (((params.len() + 3) >> 8) & 0xFF) as u8,
             instruction as u8,
         ];
         let mut crc = crc16::State::<crc16::BUYPASS>::new();
