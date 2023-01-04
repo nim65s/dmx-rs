@@ -82,9 +82,7 @@ where
             sumcheck += Wrapping(p);
         }
 
-        if checksum != !(sumcheck.0) {
-            Err(Error1::ChecksumError)
-        } else {
+        if checksum == !(sumcheck.0) {
             let length = length as usize;
             Ok(Response {
                 packet_id,
@@ -92,6 +90,8 @@ where
                 params,
                 error,
             })
+        } else {
+            Err(Error1::ChecksumError)
         }
     }
 }
@@ -101,11 +101,7 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    pub fn new_1(
-        serial: Serial,
-        direction: Direction,
-        n_recv: u8,
-    ) -> Self {
+    pub const fn new_1(serial: Serial, direction: Direction, n_recv: u8) -> Self {
         Self::new(serial, direction, n_recv)
     }
 }

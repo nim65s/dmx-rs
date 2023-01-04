@@ -41,7 +41,7 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    pub fn new(
+    pub const fn new(
         serial: Serial,
         direction: Direction,
         n_recv: u8,
