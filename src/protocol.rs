@@ -10,11 +10,14 @@ pub enum Instruction {
     FactoryReset = 0x06, // Instruction that resets the Control Table to its initial factory default settings
     Reboot = 0x08,       // Instruction to reboot the Device
     Clear = 0x10,        // Instruction to reset certain information
+    ControlTableBackup = 0x20, // Instruction to store current Control Table status data to a Backup area or to restore EEPROM data.
     StatusReturn = 0x55, // Return Instruction for the Instruction Packet
     SyncRead = 0x82, // For multiple devices, Instruction to read data from the same Address with the same length at once
     SyncWrite = 0x83, // For multiple devices, Instruction to write data on the same Address with the same length at once
+    FastSyncRead = 0x8A, // For multiple devices, Instruction to read data from the same Address with the same length at once
     BulkRead = 0x92, // For multiple devices, Instruction to read data from different Addresses with different lengths at once
     BulkWrite = 0x93, // For multiple devices, Instruction to write data on different Addresses with different lengths at once
+    FastBulkRead = 0x9A, // For multiple devices, Instruction to read data from different Addresses with different lengths at once
 }
 
 #[derive(Debug)]
