@@ -9,11 +9,6 @@ default_job = "check"
 command = ["cargo", "check", "--color", "always"]
 need_stdout = false
 
-[jobs.check-all]
-command = ["cargo", "check", "--all-targets", "--color", "always"]
-need_stdout = false
-watch = ["tests", "benches", "examples"]
-
 [jobs.check-std]
 command = ["cargo", "check", "--target", "x86_64-unknown-linux-gnu", "--example", "linux-ax12a", "--example", "linux-xl320", "--color", "always", "-F", "std"]
 need_stdout = false
@@ -25,13 +20,19 @@ need_stdout = false
 watch = ["examples"]
 
 [jobs.clippy]
-command = ["cargo", "clippy", "--color", "always"]
+command = ["cargo", "clippy", "--color", "always", "--", "-W", "clippy::pedantic", "-W", "clippy::nursery", "-W", "clippy::unwrap_used", "-W", "clippy::expect_used", "-A", "clippy::missing_errors_doc", "-A", "clippy::doc_markdown"]
 need_stdout = false
 
-[jobs.clippy-all]
-command = ["cargo", "clippy", "--all-targets", "--color", "always"]
+[jobs.clippy-std]
+command = ["cargo", "clippy", "--target", "x86_64-unknown-linux-gnu", "--example", "linux-ax12a", "--example", "linux-xl320", "--color", "always", "-F", "std"]
 need_stdout = false
-watch = ["tests", "benches", "examples"]
+watch = ["examples"]
+
+[jobs.clippy-stm32]
+command = ["cargo", "clippy", "--example", "stm32-ax12a", "--example", "stm32-mx1062", "--example", "stm32-xl320", "--color", "always", "-F", "stm32"]
+need_stdout = false
+watch = ["examples"]
+
 
 [jobs.test]
 command = ["cargo", "test", "--color", "always"]
@@ -63,11 +64,9 @@ allow_warnings = true
 # Shortcuts to internal functions (scrolling, toggling, etc.)
 # should go in your personal prefs.toml file instead.
 [keybindings]
-a = "job:check-all"
-u = "job:check-std"
+u = "job:check"
+i = "job:check-std"
 e = "job:check-stm32"
-i = "job:initial"
-c = "job:clippy"
-d = "job:doc-open"
-t = "job:test"
-r = "job:run"
+r = "job:clippy"
+s = "job:clippy-std"
+t = "job:clippy-stm32"

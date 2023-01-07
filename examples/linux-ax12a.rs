@@ -13,6 +13,7 @@ extern crate std;
 use std::{println, thread, time};
 
 use dummy_pin::DummyPin;
+use heapless::Vec;
 use serialport;
 
 use dmx::{
@@ -31,15 +32,20 @@ fn main() {
     let dummy_pin = DummyPin::new_low();
     let mut dmx = Controller::new_1(serial, dummy_pin, 0);
 
-    println!("auto ping: {}", dmx.ping(id));
+    println!("auto ping: {:?}", dmx.ping(id));
 
     println!("manual ping:");
-    dmx.send(id, Instruction::Ping, &[]);
+    dmx.send(id, Instruction::Ping, Vec::<u8, 0>::new())
+        .unwrap();
     println!("recv: {:?}", dmx.recv::<0>());
     println!("recv: {:?}", dmx.recv::<0>());
 
     println!("manual read:");
-    dmx.send(id, Instruction::Read, &[36, 2]);
+    dmx.send(
+        id,
+        Instruction::Read,
+        Vec::<u8, 2>::from_slice(&[36, 2]).unwrap(),
+    ).unwrap();
     println!("recv: {:?}", dmx.recv::<2>());
     println!("recv: {:?}", dmx.recv::<2>());
 

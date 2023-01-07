@@ -88,8 +88,8 @@ where
     fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error<Serial>>;
     fn n_recv(&self) -> u8;
 
-    fn ping<const PARAMS_SIZE: usize>(&mut self, id: u8) -> Result<bool, Error<Serial>> {
-        self.send(id, Instruction::Ping, Vec::<u8, PARAMS_SIZE>::new())?;
-        Ok(self.recv::<PARAMS_SIZE>().is_ok())
+    fn ping(&mut self, id: u8) -> Result<bool, Error<Serial>> {
+        self.send(id, Instruction::Ping, Vec::<u8, 0>::new())?;
+        Ok(self.recv::<3>().is_ok())
     }
 }

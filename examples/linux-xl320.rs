@@ -13,6 +13,7 @@ extern crate std;
 use std::{println, thread, time};
 
 use dummy_pin::DummyPin;
+use heapless::Vec;
 use serialport;
 
 use dmx::{
@@ -31,9 +32,9 @@ fn main() {
     let dummy_pin = DummyPin::new_low();
     let mut dmx = Controller::new_2(serial, dummy_pin, 0);
 
-    dmx.send(id, Instruction::Ping, &[]);
-    println!("recv: {:?}", dmx.recv()); // Err Instruction Received
-    println!("recv: {:?}", dmx.recv()); // Ok received response {…}
+    dmx.send(id, Instruction::Ping, Vec::<u8, 0>::new()).unwrap();
+    println!("recv: {:?}", dmx.recv::<4>()); // Err Instruction Received
+    println!("recv: {:?}", dmx.recv::<4>()); // Ok received response {…}
 
     loop {
         for led in 0..8 {
