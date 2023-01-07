@@ -4,8 +4,7 @@
 
 use cortex_m_rt::entry;
 use dmx::{
-    convert::distance_u32,
-    mx1062::mx1062,
+    mx1062::MX1062,
     protocol::{Controller, Protocol},
 };
 use nb::block;
@@ -99,7 +98,7 @@ fn main() -> ! {
         loop {
             let pose = dmx.get_mx1062_present_position(id);
             rprintln!("get present_position : {:?}", pose);
-            if distance_u32(goal, pose.unwrap()) < 10 {
+            if goal.abs_diff(pose.unwrap()) < 10 {
                 break;
             }
             block!(timer.wait()).ok();

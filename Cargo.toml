@@ -1,6 +1,6 @@
 [package]
 name = "dmx"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Guilhem Saurel <guilhem.saurel@laas.fr>"]
 edition = "2018"
 categories = ["embedded", "hardware-support", "no-std", "science::robotics"]
@@ -25,6 +25,7 @@ panic-rtt-target = { version = "0.1.1", features = ["cortex-m"] , optional = tru
 stm32f1xx-hal = { version = "0.7.0", features = ["rt", "stm32f103", "medium"], optional = true }
 
 serialport = { version = "4.0.1", optional = true }
+heapless = "0.7.16"
 
 [profile.release]
 codegen-units = 1 # better optimizations

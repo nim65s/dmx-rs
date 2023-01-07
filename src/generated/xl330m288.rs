@@ -1,66 +1,106 @@
-use crate::protocol::{Controller, Instruction, Protocol, Response};
+use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
 use embedded_hal::{digital::v2::OutputPin, serial};
+use heapless::Vec;
 
-pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
+pub trait XL330M288<Serial, const PROTOCOL_VERSION: u8>:
+    Protocol<Serial, PROTOCOL_VERSION>
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
     /// [Model Number](#model-number) (initial: 1,200)
-    fn get_xl330m288_model_number(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[0, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[0, 0, 2, 0]);
+    fn get_xl330m288_model_number(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(0).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Model Information](#model-information) (initial: -)
-    fn get_xl330m288_model_information(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[2, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[2, 0, 4, 0]);
+    fn get_xl330m288_model_information(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Firmware Version](#firmware-version) (initial: -)
-    fn get_xl330m288_firmware_version(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[6, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[6, 0, 1, 0]);
+    fn get_xl330m288_firmware_version(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(6).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [ID](#id) (initial: 1)
-    fn get_xl330m288_id(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[7, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[7, 0, 1, 0]);
+    fn get_xl330m288_id(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(7).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_xl330m288_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[7, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[7, 0, params[0]]);
+    fn set_xl330m288_id(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(7).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -71,29 +111,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Baud Rate](#baud-rate) (initial: 1)
-    fn get_xl330m288_baud_rate(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[8, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[8, 0, 1, 0]);
+    fn get_xl330m288_baud_rate(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(8).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_baud_rate(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[8, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[8, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(8).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -104,29 +154,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Return Delay Time](#return-delay-time) (initial: 250)
-    fn get_xl330m288_return_delay_time(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[9, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[9, 0, 1, 0]);
+    fn get_xl330m288_return_delay_time(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(9).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_return_delay_time(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[9, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[9, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(9).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -137,29 +197,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Drive Mode](#drive-mode) (initial: 0)
-    fn get_xl330m288_drive_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[10, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[10, 0, 1, 0]);
+    fn get_xl330m288_drive_mode(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(10).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_drive_mode(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[10, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[10, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(10).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -170,29 +240,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Operating Mode](#operating-mode) (initial: 3)
-    fn get_xl330m288_operating_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[11, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[11, 0, 1, 0]);
+    fn get_xl330m288_operating_mode(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(11).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_operating_mode(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[11, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[11, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(11).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -203,29 +283,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Secondary(Shadow) ID](#secondaryshadow-id12) (initial: 255)
-    fn get_xl330m288_secondary_shadow_id(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[12, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[12, 0, 1, 0]);
+    fn get_xl330m288_secondary_shadow_id(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(12).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_secondary_shadow_id(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[12, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[12, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(12).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -236,29 +326,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Protocol Type](#protocol-type13) (initial: 2)
-    fn get_xl330m288_protocol_type(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[13, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[13, 0, 1, 0]);
+    fn get_xl330m288_protocol_type(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(13).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_protocol_type(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[13, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[13, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(13).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -269,37 +369,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Homing Offset](#homing-offset) (initial: 0)
-    fn get_xl330m288_homing_offset(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[20, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[20, 0, 4, 0]);
+    fn get_xl330m288_homing_offset(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(20).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_homing_offset(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[20, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[20, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(20).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -310,37 +412,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Moving Threshold](#moving-threshold) (initial: 10)
-    fn get_xl330m288_moving_threshold(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[24, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[24, 0, 4, 0]);
+    fn get_xl330m288_moving_threshold(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(24).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_moving_threshold(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[24, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[24, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(24).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -351,29 +455,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Temperature Limit](#temperature-limit) (initial: 70)
-    fn get_xl330m288_temperature_limit(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[31, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[31, 0, 1, 0]);
+    fn get_xl330m288_temperature_limit(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(31).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_temperature_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[31, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[31, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(31).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -384,29 +498,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Max Voltage Limit](#max-voltage-limit) (initial: 70)
-    fn get_xl330m288_max_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[32, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[32, 0, 2, 0]);
+    fn get_xl330m288_max_voltage_limit(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(32).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_max_voltage_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[32, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(32).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -417,29 +541,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Min Voltage Limit](#min-voltage-limit) (initial: 35)
-    fn get_xl330m288_min_voltage_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[34, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[34, 0, 2, 0]);
+    fn get_xl330m288_min_voltage_limit(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(34).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_min_voltage_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[34, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(34).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -450,29 +584,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [PWM Limit](#pwm-limit) (initial: 885)
-    fn get_xl330m288_pwm_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[36, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[36, 0, 2, 0]);
+    fn get_xl330m288_pwm_limit(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(36).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_pwm_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[36, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[36, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(36).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -483,29 +627,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Current Limit](#current-limit) (initial: 1,750)
-    fn get_xl330m288_current_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[38, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[38, 0, 2, 0]);
+    fn get_xl330m288_current_limit(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(38).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_current_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[38, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[38, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(38).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -516,37 +670,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Velocity Limit](#velocity-limit) (initial: 445)
-    fn get_xl330m288_velocity_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[44, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[44, 0, 4, 0]);
+    fn get_xl330m288_velocity_limit(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(44).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_velocity_limit(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[44, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[44, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(44).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -557,37 +713,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Max Position Limit](#max-position-limit) (initial: 4,095)
-    fn get_xl330m288_max_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[48, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[48, 0, 4, 0]);
+    fn get_xl330m288_max_position_limit(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(48).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_max_position_limit(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[48, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[48, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(48).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -598,37 +756,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Min Position Limit](#min-position-limit) (initial: 0)
-    fn get_xl330m288_min_position_limit(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[52, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[52, 0, 4, 0]);
+    fn get_xl330m288_min_position_limit(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(52).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_min_position_limit(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[52, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[52, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(52).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -639,29 +799,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Startup Configuration](#startup-configuration) (initial: 0)
-    fn get_xl330m288_startup_configuration(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[60, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[60, 0, 1, 0]);
+    fn get_xl330m288_startup_configuration(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(60).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_startup_configuration(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[60, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[60, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(60).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -672,29 +842,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [PWM Slope](#pwm-slope) (initial: 140)
-    fn get_xl330m288_pwm_slope(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[62, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[62, 0, 1, 0]);
+    fn get_xl330m288_pwm_slope(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(62).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_pwm_slope(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[62, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[62, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(62).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -705,29 +885,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Shutdown](#shutdown) (initial: 53)
-    fn get_xl330m288_shutdown(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[63, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[63, 0, 1, 0]);
+    fn get_xl330m288_shutdown(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(63).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_shutdown(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[63, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[63, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(63).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -738,29 +928,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Torque Enable](#torque-enable) (initial: 0)
-    fn get_xl330m288_torque_enable(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[64, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[64, 0, 1, 0]);
+    fn get_xl330m288_torque_enable(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(64).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_torque_enable(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[64, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[64, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(64).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -771,29 +971,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [LED](#led) (initial: 0)
-    fn get_xl330m288_led(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[65, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[65, 0, 1, 0]);
+    fn get_xl330m288_led(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(65).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_led(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[65, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[65, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(65).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -804,29 +1014,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Status Return Level](#status-return-level) (initial: 2)
-    fn get_xl330m288_status_return_level(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[68, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[68, 0, 1, 0]);
+    fn get_xl330m288_status_return_level(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(68).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_status_return_level(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[68, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[68, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(68).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -837,55 +1057,79 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Registered Instruction](#registered-instruction) (initial: 0)
-    fn get_xl330m288_registered_instruction(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[69, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[69, 0, 1, 0]);
+    fn get_xl330m288_registered_instruction(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(69).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Hardware Error Status](#hardware-error-status) (initial: 0)
-    fn get_xl330m288_hardware_error_status(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[70, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[70, 0, 1, 0]);
+    fn get_xl330m288_hardware_error_status(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(70).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Velocity I Gain](#velocity-i-gain) (initial: 1,600)
-    fn get_xl330m288_velocity_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[76, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[76, 0, 2, 0]);
+    fn get_xl330m288_velocity_i_gain(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(76).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_velocity_i_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[76, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[76, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(76).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -896,29 +1140,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Velocity P Gain](#velocity-p-gain) (initial: 180)
-    fn get_xl330m288_velocity_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[78, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[78, 0, 2, 0]);
+    fn get_xl330m288_velocity_p_gain(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(78).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_velocity_p_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[78, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[78, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(78).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -929,29 +1183,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Position D Gain](#position-d-gain) (initial: 0)
-    fn get_xl330m288_position_d_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[80, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[80, 0, 2, 0]);
+    fn get_xl330m288_position_d_gain(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(80).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_position_d_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[80, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[80, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(80).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -962,29 +1226,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Position I Gain](#position-i-gain) (initial: 0)
-    fn get_xl330m288_position_i_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[82, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[82, 0, 2, 0]);
+    fn get_xl330m288_position_i_gain(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(82).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_position_i_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[82, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[82, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(82).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -995,29 +1269,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Position P Gain](#position-p-gain) (initial: 400)
-    fn get_xl330m288_position_p_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[84, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[84, 0, 2, 0]);
+    fn get_xl330m288_position_p_gain(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(84).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_position_p_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[84, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[84, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(84).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1028,29 +1312,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Feedforward 2nd Gain](#feedforward-2nd-gain) (initial: 0)
-    fn get_xl330m288_feedforward_2nd_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[88, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[88, 0, 2, 0]);
+    fn get_xl330m288_feedforward_2nd_gain(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(88).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_feedforward_2nd_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[88, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[88, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(88).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1061,29 +1355,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Feedforward 1st Gain](#feedforward-1st-gain) (initial: 0)
-    fn get_xl330m288_feedforward_1st_gain(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[90, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[90, 0, 2, 0]);
+    fn get_xl330m288_feedforward_1st_gain(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(90).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_feedforward_1st_gain(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[90, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[90, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(90).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1094,29 +1398,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Bus Watchdog](#bus-watchdog) (initial: 0)
-    fn get_xl330m288_bus_watchdog(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[98, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[98, 0, 1, 0]);
+    fn get_xl330m288_bus_watchdog(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(98).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_bus_watchdog(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[98, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[98, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(98).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1127,29 +1441,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Goal PWM](#goal-pwm) (initial: \-)
-    fn get_xl330m288_goal_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[100, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[100, 0, 2, 0]);
+    fn get_xl330m288_goal_pwm(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(100).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_goal_pwm(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[100, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[100, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(100).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1160,29 +1484,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Goal Current](#goal-current) (initial: \-)
-    fn get_xl330m288_goal_current(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[102, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[102, 0, 2, 0]);
+    fn get_xl330m288_goal_current(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(102).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_goal_current(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[102, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[102, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(102).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1193,37 +1527,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Goal Velocity](#goal-velocity) (initial: \-)
-    fn get_xl330m288_goal_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[104, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[104, 0, 4, 0]);
+    fn get_xl330m288_goal_velocity(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(104).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_goal_velocity(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[104, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[104, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(104).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -1234,37 +1570,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Profile Acceleration](#profile-acceleration) (initial: 0)
-    fn get_xl330m288_profile_acceleration(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[108, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[108, 0, 4, 0]);
+    fn get_xl330m288_profile_acceleration(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(108).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_profile_acceleration(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[108, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[108, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(108).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -1275,37 +1613,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Profile Velocity](#profile-velocity) (initial: 0)
-    fn get_xl330m288_profile_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[112, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[112, 0, 4, 0]);
+    fn get_xl330m288_profile_velocity(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(112).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_profile_velocity(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[112, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[112, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(112).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -1316,37 +1656,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Goal Position](#goal-position) (initial: \-)
-    fn get_xl330m288_goal_position(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[116, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[116, 0, 4, 0]);
+    fn get_xl330m288_goal_position(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(116).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_goal_position(
         &mut self,
         id: u8,
         params: u32,
-    ) -> Result<Option<Response<4>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(
-                id,
-                Instruction::Write,
-                &[116, params[0], params[1], params[2], params[3]],
-            );
-        } else {
-            self.send(
-                id,
-                Instruction::Write,
-                &[116, 0, params[0], params[1], params[2], params[3]],
-            );
+    ) -> Result<Option<Response<4>>, Error<Serial>> {
+        let mut content: Vec<u8, 6> = Vec::new();
+        content.push(116).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<6>()?;
         }
@@ -1357,185 +1699,279 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Realtime Tick](#realtime-tick) (initial: \-)
-    fn get_xl330m288_realtime_tick(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[120, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[120, 0, 2, 0]);
+    fn get_xl330m288_realtime_tick(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(120).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Moving](#moving) (initial: 0)
-    fn get_xl330m288_moving(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[122, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[122, 0, 1, 0]);
+    fn get_xl330m288_moving(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(122).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Moving Status](#moving-status) (initial: 0)
-    fn get_xl330m288_moving_status(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[123, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[123, 0, 1, 0]);
+    fn get_xl330m288_moving_status(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(123).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Present PWM](#present-pwm) (initial: \-)
-    fn get_xl330m288_present_pwm(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[124, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[124, 0, 2, 0]);
+    fn get_xl330m288_present_pwm(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(124).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Present Current](#present-current) (initial: \-)
-    fn get_xl330m288_present_current(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[126, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[126, 0, 2, 0]);
+    fn get_xl330m288_present_current(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(126).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Present Velocity](#present-velocity) (initial: \-)
-    fn get_xl330m288_present_velocity(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[128, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[128, 0, 4, 0]);
+    fn get_xl330m288_present_velocity(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(128).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Present Position](#present-position) (initial: \-)
-    fn get_xl330m288_present_position(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[132, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[132, 0, 4, 0]);
+    fn get_xl330m288_present_position(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(132).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Velocity Trajectory](#velocity-trajectory) (initial: \-)
-    fn get_xl330m288_velocity_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[136, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[136, 0, 4, 0]);
+    fn get_xl330m288_velocity_trajectory(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(136).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Position Trajectory](#position-trajectory) (initial: \-)
-    fn get_xl330m288_position_trajectory(&mut self, id: u8) -> Result<u32, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[140, 4]);
-        } else {
-            self.send(id, Instruction::Read, &[140, 0, 4, 0]);
+    fn get_xl330m288_position_trajectory(&mut self, id: u8) -> Result<u32, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(140).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<4>()?.params;
-        Ok(u32::from_le_bytes(params))
+        Ok(u32::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Present Input Voltage](#present-input-voltage) (initial: \-)
-    fn get_xl330m288_present_input_voltage(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[144, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[144, 0, 2, 0]);
+    fn get_xl330m288_present_input_voltage(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(144).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Present Temperature](#present-temperature) (initial: \-)
-    fn get_xl330m288_present_temperature(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[146, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[146, 0, 1, 0]);
+    fn get_xl330m288_present_temperature(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(146).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Backup Ready](#backup-ready) (initial: -)
-    fn get_xl330m288_backup_ready(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[147, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[147, 0, 1, 0]);
+    fn get_xl330m288_backup_ready(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(147).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// [Indirect Address 1](#indirect-address) (initial: 208)
-    fn get_xl330m288_indirect_address_1(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[168, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[168, 0, 2, 0]);
+    fn get_xl330m288_indirect_address_1(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(168).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_address_1(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[168, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[168, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(168).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1546,29 +1982,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Address 2](#indirect-address) (initial: 209)
-    fn get_xl330m288_indirect_address_2(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[170, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[170, 0, 2, 0]);
+    fn get_xl330m288_indirect_address_2(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(170).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_address_2(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[170, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[170, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(170).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1579,29 +2025,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Address 3](#indirect-address) (initial: 210)
-    fn get_xl330m288_indirect_address_3(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[172, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[172, 0, 2, 0]);
+    fn get_xl330m288_indirect_address_3(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(172).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_address_3(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[172, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[172, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(172).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1612,29 +2068,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Address 18](#indirect-address) (initial: 225)
-    fn get_xl330m288_indirect_address_18(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[202, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[202, 0, 2, 0]);
+    fn get_xl330m288_indirect_address_18(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(202).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_address_18(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[202, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[202, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(202).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1645,29 +2111,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Address 19](#indirect-address) (initial: 226)
-    fn get_xl330m288_indirect_address_19(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[204, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[204, 0, 2, 0]);
+    fn get_xl330m288_indirect_address_19(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(204).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_address_19(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[204, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[204, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(204).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1678,29 +2154,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Address 20](#indirect-address) (initial: 227)
-    fn get_xl330m288_indirect_address_20(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[206, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[206, 0, 2, 0]);
+    fn get_xl330m288_indirect_address_20(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(206).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_address_20(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[206, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[206, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(206).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1711,29 +2197,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Data 1](#indirect-data) (initial: 0)
-    fn get_xl330m288_indirect_data_1(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[208, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[208, 0, 1, 0]);
+    fn get_xl330m288_indirect_data_1(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(208).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_data_1(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[208, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[208, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(208).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1744,29 +2240,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Data 2](#indirect-data) (initial: 0)
-    fn get_xl330m288_indirect_data_2(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[209, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[209, 0, 1, 0]);
+    fn get_xl330m288_indirect_data_2(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(209).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_data_2(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[209, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[209, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(209).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1777,29 +2283,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Data 3](#indirect-data) (initial: 0)
-    fn get_xl330m288_indirect_data_3(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[210, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[210, 0, 1, 0]);
+    fn get_xl330m288_indirect_data_3(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(210).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_data_3(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[210, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[210, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(210).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1810,29 +2326,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Data 18](#indirect-data) (initial: 0)
-    fn get_xl330m288_indirect_data_18(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[225, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[225, 0, 1, 0]);
+    fn get_xl330m288_indirect_data_18(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(225).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_data_18(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[225, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[225, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(225).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1843,29 +2369,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Data 19](#indirect-data) (initial: 0)
-    fn get_xl330m288_indirect_data_19(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[226, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[226, 0, 1, 0]);
+    fn get_xl330m288_indirect_data_19(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(226).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_data_19(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[226, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[226, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(226).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1876,29 +2412,39 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// [Indirect Data 20](#indirect-data) (initial: 0)
-    fn get_xl330m288_indirect_data_20(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[227, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[227, 0, 1, 0]);
+    fn get_xl330m288_indirect_data_20(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(227).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_xl330m288_indirect_data_20(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[227, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[227, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(227).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1910,14 +2456,14 @@ pub trait XL330M288<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
     }
 }
 
-impl<Serial, Direction> XL330M288<1> for Controller<Serial, Direction, 1>
+impl<Serial, Direction> XL330M288<Serial, 1> for Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
 }
 
-impl<Serial, Direction> XL330M288<2> for Controller<Serial, Direction, 2>
+impl<Serial, Direction> XL330M288<Serial, 2> for Controller<Serial, Direction, 2>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,

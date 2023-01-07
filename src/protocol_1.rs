@@ -1,43 +1,27 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol1>
 
-use crate::protocol::{Controller, Instruction, Protocol, Response};
-use core::{fmt, num::Wrapping};
+use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
+use core::num::Wrapping;
 use embedded_hal::{digital::v2::OutputPin, serial};
+use heapless::Vec;
 use nb::block;
 
 const HEADER: [u8; 2] = [0xFF, 0xFF];
 
-pub enum Error1<Serial>
-where
-    Serial: serial::Write<u8> + serial::Read<u8>,
-{
-    Communication(<Serial as serial::Read<u8>>::Error),
-    ChecksumError,
-}
-
-impl<Serial> fmt::Debug for Error1<Serial>
-where
-    Serial: serial::Write<u8> + serial::Read<u8>,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self {
-            Self::Communication(_) => f.write_str("Serial read error"),
-            Self::ChecksumError => f.write_str("Checksum error"),
-        }
-    }
-}
-
-impl<Serial, Direction> Protocol<1> for Controller<Serial, Direction, 1>
+impl<Serial, Direction> Protocol<Serial, 1> for Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    type Error = Error1<Serial>;
-
     fn n_recv(&self) -> u8 {
         self.n_recv
     }
-    fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]) {
+    fn send<const PARAMS_SIZE: usize>(
+        &mut self,
+        id: u8,
+        instruction: Instruction,
+        params: Vec<u8, PARAMS_SIZE>,
+    ) -> Result<(), Error<Serial>> {
         let content = [id, (params.len() + 2) as u8, instruction as u8];
         let mut sumcheck = Wrapping(0);
 
@@ -45,16 +29,17 @@ where
         for &b in &HEADER {
             block!(self.serial.write(b)).ok();
         }
-        for &p in content.iter().chain(params) {
+        for &p in content.iter().chain(params.as_slice()) {
             sumcheck += Wrapping(p);
             block!(self.serial.write(p)).ok();
         }
         block!(self.serial.write(!(sumcheck.0))).ok();
         block!(self.serial.flush()).ok();
         self.direction.set_low().ok();
+        Ok(())
     }
 
-    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Self::Error> {
+    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error<Serial>> {
         // wait for HEADER
         let mut head = 0;
         loop {
@@ -68,14 +53,19 @@ where
         }
 
         // read content
-        let packet_id: u8 = block!(self.serial.read()).map_err(Error1::Communication)?;
-        let length: u8 = block!(self.serial.read()).map_err(Error1::Communication)?;
-        let error: u8 = block!(self.serial.read()).map_err(Error1::Communication)?;
-        let mut params = [0; PARAMS_SIZE];
-        for param in params.iter_mut().take(length as usize - 2) {
-            *param = block!(self.serial.read()).map_err(Error1::Communication)?;
+        let packet_id: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
+        let length: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
+        if usize::from(length) - 2 < PARAMS_SIZE {
+            return Err(Error::TooSmall);
         }
-        let checksum: u8 = block!(self.serial.read()).map_err(Error1::Communication)?;
+        let error: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
+        let mut params = Vec::new();
+        for _ in 0..(length - 2) {
+            params
+                .push(block!(self.serial.read()).map_err(Error::Communication)?)
+                .map_err(|_| Error::TooSmall)?;
+        }
+        let checksum: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
 
         let mut sumcheck = Wrapping(packet_id) + Wrapping(length) + Wrapping(error);
         for &p in params.iter() {
@@ -91,7 +81,7 @@ where
                 error,
             })
         } else {
-            Err(Error1::ChecksumError)
+            Err(Error::CrcError)
         }
     }
 }

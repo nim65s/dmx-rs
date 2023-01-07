@@ -1,53 +1,81 @@
-use crate::protocol::{Controller, Instruction, Protocol, Response};
+use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
 use embedded_hal::{digital::v2::OutputPin, serial};
+use heapless::Vec;
 
-pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
+pub trait MX106<Serial, const PROTOCOL_VERSION: u8>: Protocol<Serial, PROTOCOL_VERSION>
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
     /// Model Number (initial: 320)
-    fn get_mx106_model_number(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[0, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[0, 0, 2, 0]);
+    fn get_mx106_model_number(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(0).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Firmware Version (initial: -)
-    fn get_mx106_firmware_version(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[2, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[2, 0, 1, 0]);
+    fn get_mx106_firmware_version(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// DYNAMIXEL ID (initial: 1)
-    fn get_mx106_id(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[3, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[3, 0, 1, 0]);
+    fn get_mx106_id(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(3).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_mx106_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[3, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[3, 0, params[0]]);
+    fn set_mx106_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(3).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -58,29 +86,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Communication Speed (initial: 34)
-    fn get_mx106_baud_rate(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[4, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[4, 0, 1, 0]);
+    fn get_mx106_baud_rate(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_baud_rate(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[4, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[4, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(4).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -91,29 +129,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Response Delay Time (initial: 250)
-    fn get_mx106_return_delay_time(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[5, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[5, 0, 1, 0]);
+    fn get_mx106_return_delay_time(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(5).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_return_delay_time(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[5, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[5, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(5).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -124,29 +172,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Clockwise Angle Limit (initial: 0)
-    fn get_mx106_cw_angle_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[6, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[6, 0, 2, 0]);
+    fn get_mx106_cw_angle_limit(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(6).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_cw_angle_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[6, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[6, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(6).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -157,29 +215,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Counter-Clockwise Angle Limit (initial: 4,095)
-    fn get_mx106_ccw_angle_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[8, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[8, 0, 2, 0]);
+    fn get_mx106_ccw_angle_limit(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(8).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_ccw_angle_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[8, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[8, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(8).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -190,29 +258,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Dual Mode Setting (initial: 0)
-    fn get_mx106_drive_mode(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[10, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[10, 0, 1, 0]);
+    fn get_mx106_drive_mode(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(10).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_drive_mode(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[10, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[10, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(10).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -223,29 +301,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Maximum Internal Temperature Limit (initial: 80)
-    fn get_mx106_temperature_limit(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[11, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[11, 0, 1, 0]);
+    fn get_mx106_temperature_limit(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(11).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_temperature_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[11, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[11, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(11).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -256,29 +344,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Minimum Input Voltage Limit (initial: 60)
-    fn get_mx106_min_voltage_limit(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[12, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[12, 0, 1, 0]);
+    fn get_mx106_min_voltage_limit(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(12).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_min_voltage_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[12, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[12, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(12).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -289,29 +387,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Maximum Input Voltage Limit (initial: 160)
-    fn get_mx106_max_voltage_limit(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[13, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[13, 0, 1, 0]);
+    fn get_mx106_max_voltage_limit(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(13).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_max_voltage_limit(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[13, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[13, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(13).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -322,29 +430,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Maximun Torque (initial: 1023)
-    fn get_mx106_max_torque(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[14, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[14, 0, 2, 0]);
+    fn get_mx106_max_torque(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(14).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_max_torque(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[14, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[14, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(14).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -355,29 +473,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Select Types of Status Return (initial: 2)
-    fn get_mx106_status_return_level(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[16, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[16, 0, 1, 0]);
+    fn get_mx106_status_return_level(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(16).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_status_return_level(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[16, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[16, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(16).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -388,29 +516,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// LED for Alarm (initial: 36)
-    fn get_mx106_alarm_led(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[17, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[17, 0, 1, 0]);
+    fn get_mx106_alarm_led(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(17).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_alarm_led(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[17, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[17, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(17).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -421,29 +559,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Shutdown Error Information (initial: 36)
-    fn get_mx106_shutdown(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[18, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[18, 0, 1, 0]);
+    fn get_mx106_shutdown(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(18).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_shutdown(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[18, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[18, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(18).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -454,29 +602,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Adjust Position with Offset (initial: 0)
-    fn get_mx106_multi_turn_offset(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[20, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[20, 0, 2, 0]);
+    fn get_mx106_multi_turn_offset(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(20).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_multi_turn_offset(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[20, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[20, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(20).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -487,29 +645,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Divider for Position Resolution (initial: 1)
-    fn get_mx106_resolution_divider(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[22, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[22, 0, 1, 0]);
+    fn get_mx106_resolution_divider(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(22).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_resolution_divider(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[22, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[22, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(22).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -520,29 +688,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Motor Torque On/Off (initial: 0)
-    fn get_mx106_torque_enable(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[24, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[24, 0, 1, 0]);
+    fn get_mx106_torque_enable(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(24).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_torque_enable(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[24, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[24, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(24).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -553,25 +731,35 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Status LED On/Off (initial: 0)
-    fn get_mx106_led(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[25, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[25, 0, 1, 0]);
+    fn get_mx106_led(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(25).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_mx106_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[25, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[25, 0, params[0]]);
+    fn set_mx106_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(25).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -582,25 +770,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Derivative Gain (initial: 0)
-    fn get_mx106_d_gain(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[26, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[26, 0, 1, 0]);
+    fn get_mx106_d_gain(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(26).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_mx106_d_gain(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[26, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[26, 0, params[0]]);
+    fn set_mx106_d_gain(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(26).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -611,25 +813,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Integral Gain (initial: 0)
-    fn get_mx106_i_gain(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[27, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[27, 0, 1, 0]);
+    fn get_mx106_i_gain(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(27).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_mx106_i_gain(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[27, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[27, 0, params[0]]);
+    fn set_mx106_i_gain(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(27).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -640,25 +856,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Proportional Gain (initial: 32)
-    fn get_mx106_p_gain(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[28, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[28, 0, 1, 0]);
+    fn get_mx106_p_gain(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(28).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_mx106_p_gain(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[28, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[28, 0, params[0]]);
+    fn set_mx106_p_gain(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(28).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -669,29 +899,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Desired Position (initial: -)
-    fn get_mx106_goal_position(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[30, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[30, 0, 2, 0]);
+    fn get_mx106_goal_position(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(30).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_goal_position(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[30, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[30, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(30).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -702,29 +942,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Moving Speed(Moving Velocity) (initial: -)
-    fn get_mx106_moving_speed(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[32, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[32, 0, 2, 0]);
+    fn get_mx106_moving_speed(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(32).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_moving_speed(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[32, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[32, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(32).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -735,29 +985,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Torque Limit (initial: Max Torque)
-    fn get_mx106_torque_limit(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[34, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[34, 0, 2, 0]);
+    fn get_mx106_torque_limit(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(34).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_torque_limit(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[34, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[34, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(34).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -768,116 +1028,175 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Present Position (initial: -)
-    fn get_mx106_present_position(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[36, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[36, 0, 2, 0]);
+    fn get_mx106_present_position(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(36).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Present Speed (initial: -)
-    fn get_mx106_present_speed(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[38, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[38, 0, 2, 0]);
+    fn get_mx106_present_speed(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(38).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Present Load (initial: -)
-    fn get_mx106_present_load(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[40, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[40, 0, 2, 0]);
+    fn get_mx106_present_load(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(40).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Present Voltage (initial: -)
-    fn get_mx106_present_voltage(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[42, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[42, 0, 1, 0]);
+    fn get_mx106_present_voltage(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(42).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Present Temperature (initial: -)
-    fn get_mx106_present_temperature(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[43, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[43, 0, 1, 0]);
+    fn get_mx106_present_temperature(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(43).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// If Instruction is registered (initial: 0)
-    fn get_mx106_registered(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[44, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[44, 0, 1, 0]);
+    fn get_mx106_registered(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(44).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Movement Status (initial: 0)
-    fn get_mx106_moving(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[46, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[46, 0, 1, 0]);
+    fn get_mx106_moving(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(46).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Locking EEPROM (initial: 0)
-    fn get_mx106_lock(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[47, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[47, 0, 1, 0]);
+    fn get_mx106_lock(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(47).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_mx106_lock(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[47, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[47, 0, params[0]]);
+    fn set_mx106_lock(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(47).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -888,25 +1207,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Minimum Current Threshold (initial: 0)
-    fn get_mx106_punch(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[48, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[48, 0, 2, 0]);
+    fn get_mx106_punch(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(48).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
-    fn set_mx106_punch(&mut self, id: u8, params: u16) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[48, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[48, 0, params[0], params[1]]);
+    fn set_mx106_punch(
+        &mut self,
+        id: u8,
+        params: u16,
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(48).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -917,42 +1250,59 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Count Time in millisecond (initial: 0)
-    fn get_mx106_realtime_tick(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[50, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[50, 0, 2, 0]);
+    fn get_mx106_realtime_tick(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(50).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     /// Consuming Current (initial: 0)
-    fn get_mx106_current(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[68, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[68, 0, 2, 0]);
+    fn get_mx106_current(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(68).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_current(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[68, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[68, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(68).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -963,29 +1313,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Torque Control Mode On/Off (initial: 0)
-    fn get_mx106_torque_ctrl_mode_enable(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[70, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[70, 0, 1, 0]);
+    fn get_mx106_torque_ctrl_mode_enable(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(70).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_torque_ctrl_mode_enable(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[70, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[70, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(70).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -996,29 +1356,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Goal Torque (initial: 0)
-    fn get_mx106_goal_torque(&mut self, id: u8) -> Result<u16, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[71, 2]);
-        } else {
-            self.send(id, Instruction::Read, &[71, 0, 2, 0]);
+    fn get_mx106_goal_torque(&mut self, id: u8) -> Result<u16, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(71).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(2).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<2>()?.params;
-        Ok(u16::from_le_bytes(params))
+        Ok(u16::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_goal_torque(
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[71, params[0], params[1]]);
-        } else {
-            self.send(id, Instruction::Write, &[71, 0, params[0], params[1]]);
+    ) -> Result<Option<Response<2>>, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(71).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
@@ -1029,29 +1399,39 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
         }
     }
     /// Goal Acceleration (initial: 0)
-    fn get_mx106_goal_acceleration(&mut self, id: u8) -> Result<u8, Self::Error> {
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Read, &[73, 1]);
-        } else {
-            self.send(id, Instruction::Read, &[73, 0, 1, 0]);
+    fn get_mx106_goal_acceleration(&mut self, id: u8) -> Result<u8, Error<Serial>> {
+        let mut content: Vec<u8, 4> = Vec::new();
+        content.push(73).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        content.push(1).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Read, content)?;
         if self.n_recv() == 2 {
             self.recv::<4>()?;
         }
         let params = self.recv::<1>()?.params;
-        Ok(u8::from_le_bytes(params))
+        Ok(u8::from_le_bytes(
+            params.into_array().map_err(|_| Error::TooSmall)?,
+        ))
     }
     fn set_mx106_goal_acceleration(
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Self::Error> {
-        let params = params.to_le_bytes();
-        if PROTOCOL_VERSION == 1 {
-            self.send(id, Instruction::Write, &[73, params[0]]);
-        } else {
-            self.send(id, Instruction::Write, &[73, 0, params[0]]);
+    ) -> Result<Option<Response<1>>, Error<Serial>> {
+        let mut content: Vec<u8, 3> = Vec::new();
+        content.push(73).map_err(|_| Error::TooSmall)?;
+        if PROTOCOL_VERSION == 2 {
+            content.push(0).map_err(|_| Error::TooSmall)?;
         }
+        for byte in params.to_le_bytes() {
+            content.push(byte).map_err(|_| Error::TooSmall)?;
+        }
+        self.send(id, Instruction::Write, content)?;
         if self.n_recv() == 2 {
             self.recv::<3>()?;
         }
@@ -1063,14 +1443,14 @@ pub trait MX106<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
     }
 }
 
-impl<Serial, Direction> MX106<1> for Controller<Serial, Direction, 1>
+impl<Serial, Direction> MX106<Serial, 1> for Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
 }
 
-impl<Serial, Direction> MX106<2> for Controller<Serial, Direction, 2>
+impl<Serial, Direction> MX106<Serial, 2> for Controller<Serial, Direction, 2>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,

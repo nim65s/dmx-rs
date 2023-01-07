@@ -1,5 +1,4 @@
 #![deny(unsafe_code)]
-#![no_std]
 
 /*
  * In this example, we short-circuit RX & TX, and plug this to the DATA half-duplex port.

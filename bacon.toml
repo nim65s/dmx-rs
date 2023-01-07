@@ -14,6 +14,16 @@ command = ["cargo", "check", "--all-targets", "--color", "always"]
 need_stdout = false
 watch = ["tests", "benches", "examples"]
 
+[jobs.check-std]
+command = ["cargo", "check", "--target", "x86_64-unknown-linux-gnu", "--example", "linux-ax12a", "--example", "linux-xl320", "--color", "always", "-F", "std"]
+need_stdout = false
+watch = ["examples"]
+
+[jobs.check-stm32]
+command = ["cargo", "check", "--example", "stm32-ax12a", "--example", "stm32-mx1062", "--example", "stm32-xl320", "--color", "always", "-F", "stm32"]
+need_stdout = false
+watch = ["examples"]
+
 [jobs.clippy]
 command = ["cargo", "clippy", "--color", "always"]
 need_stdout = false
@@ -54,6 +64,8 @@ allow_warnings = true
 # should go in your personal prefs.toml file instead.
 [keybindings]
 a = "job:check-all"
+u = "job:check-std"
+e = "job:check-stm32"
 i = "job:initial"
 c = "job:clippy"
 d = "job:doc-open"

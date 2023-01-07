@@ -1,8 +1,8 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol2>
 
-use crate::protocol::{Controller, Instruction, Protocol, Response};
-use core::fmt;
+use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
 use embedded_hal::{digital::v2::OutputPin, serial};
+use heapless::Vec;
 use nb::block;
 
 const HEADER: [u8; 4] = [0xFF, 0xFF, 0xFD, 0x00];
@@ -35,38 +35,20 @@ impl From<u8> for Status {
     }
 }
 
-pub enum Error2<Serial>
-where
-    Serial: serial::Write<u8> + serial::Read<u8>,
-{
-    Communication(<Serial as serial::Read<u8>>::Error),
-    CrcError,
-    InstructionReceived,
-}
-
-impl<Serial> fmt::Debug for Error2<Serial>
-where
-    Serial: serial::Write<u8> + serial::Read<u8>,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self {
-            Self::Communication(_) => f.write_str("Serial read error"),
-            e => f.write_fmt(format_args!("{e:?}")),
-        }
-    }
-}
-
-impl<Serial, Direction> Protocol<2> for Controller<Serial, Direction, 2>
+impl<Serial, Direction> Protocol<Serial, 2> for Controller<Serial, Direction, 2>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    type Error = Error2<Serial>;
-
     fn n_recv(&self) -> u8 {
         self.n_recv
     }
-    fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]) {
+    fn send<const PARAMS_SIZE: usize>(
+        &mut self,
+        id: u8,
+        instruction: Instruction,
+        params: Vec<u8, PARAMS_SIZE>,
+    ) -> Result<(), Error<Serial>> {
         let content = [
             id,
             ((params.len() + 3) & 0xFF) as u8,
@@ -76,20 +58,26 @@ where
         let mut crc = crc16::State::<crc16::BUYPASS>::new();
         crc.update(&HEADER);
         crc.update(&content);
-        crc.update(params);
+        crc.update(params.as_slice());
         let crc = crc.get();
         let crc = [crc as u8, (crc >> 8) as u8];
 
         // send data in half duplex
         self.direction.set_high().ok();
-        for &b in HEADER.iter().chain(&content).chain(params).chain(&crc) {
+        for &b in HEADER
+            .iter()
+            .chain(&content)
+            .chain(params.as_slice())
+            .chain(&crc)
+        {
             block!(self.serial.write(b)).ok();
         }
         block!(self.serial.flush()).ok();
         self.direction.set_low().ok();
+        Ok(())
     }
 
-    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Self::Error> {
+    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error<Serial>> {
         // wait for HEADER
         let mut head = 0;
         loop {
@@ -103,22 +91,27 @@ where
         }
 
         // read content
-        let packet_id: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
-        let length_l: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
-        let length_h: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
-        let instruction: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
+        let packet_id: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
+        let length_l: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
+        let length_h: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
+        let instruction: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
         if instruction != Instruction::StatusReturn as u8 {
-            return Err(Error2::InstructionReceived);
+            return Err(Error::InstructionReceived);
         }
         let length: usize = length_l as usize + ((length_h as usize) << 8) - 4;
-        let error: u8 = block!(self.serial.read()).map_err(Error2::Communication)?;
-        let mut params = [0; PARAMS_SIZE];
-        for param in params.iter_mut().take(length) {
-            *param = block!(self.serial.read()).map_err(Error2::Communication)?;
+        if length < PARAMS_SIZE {
+            return Err(Error::TooSmall);
+        }
+        let error: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
+        let mut params = Vec::new();
+        for _ in 0..length {
+            params
+                .push(block!(self.serial.read()).map_err(Error::Communication)?)
+                .map_err(|_| Error::TooSmall)?;
         }
         let mut crcs = [0; 2];
-        crcs[0] = block!(self.serial.read()).map_err(Error2::Communication)?;
-        crcs[1] = block!(self.serial.read()).map_err(Error2::Communication)?;
+        crcs[0] = block!(self.serial.read()).map_err(Error::Communication)?;
+        crcs[1] = block!(self.serial.read()).map_err(Error::Communication)?;
 
         // compute CRC
         let mut crc = crc16::State::<crc16::BUYPASS>::new();
@@ -130,7 +123,7 @@ where
         let crc = crc.get();
 
         if crc as u8 != crcs[0] || (crc >> 8) as u8 != crcs[1] {
-            Err(Error2::CrcError)
+            Err(Error::CrcError)
         } else {
             Ok(Response {
                 packet_id,
@@ -147,11 +140,7 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    pub const fn new_2(
-        serial: Serial,
-        direction: Direction,
-        n_recv: u8,
-    ) -> Self {
+    pub const fn new_2(serial: Serial, direction: Direction, n_recv: u8) -> Self {
         Self::new(serial, direction, n_recv)
     }
 }

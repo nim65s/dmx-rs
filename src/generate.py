@@ -9,24 +9,28 @@ from pathlib import Path
 from subprocess import run
 
 HEAD = """
-use crate::protocol::{Controller, Instruction, Protocol, Response};
+use crate::protocol::{Controller, Instruction, Protocol, Response, Error};
 use embedded_hal::{digital::v2::OutputPin, serial};
+use heapless::Vec;
 
 
-pub trait MOTOR<const PROTOCOL_VERSION: u8>: Protocol<PROTOCOL_VERSION> {
+pub trait MOTOR<Serial, const PROTOCOL_VERSION: u8>: Protocol<Serial, PROTOCOL_VERSION> 
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
 """
 
 TAIL = """
 }
 
-impl<Serial, Direction> MOTOR<1> for Controller<Serial, Direction, 1>
+impl<Serial, Direction> MOTOR<Serial, 1> for Controller<Serial, Direction, 1>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
 }
 
-impl<Serial, Direction> MOTOR<2> for Controller<Serial, Direction, 2>
+impl<Serial, Direction> MOTOR<Serial, 2> for Controller<Serial, Direction, 2>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
@@ -59,27 +63,35 @@ def generate(
     )
     lines = [
         f"/// {description} (initial: {initial_value})",
-        f"fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Self::Error> {{",
-        "    if PROTOCOL_VERSION == 1 {",
-        f"        self.send(id, Instruction::Read, &[{address[0]}, {size_t[0]}]);",
-        "    } else {"
-        f"        self.send(id, Instruction::Read, &[{address[0]}, {address[1]}, {size_t[0]}, {size_t[1]}]);",
-        "    }"
+        f"fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Error<Serial>> {{",
+        f"    let mut content : Vec<u8, 4> = Vec::new();",
+        f"    content.push({address[0]}).map_err(|_| Error::TooSmall)?;",
+        "    if PROTOCOL_VERSION == 2 {",
+        f"        content.push({address[1]}).map_err(|_| Error::TooSmall)?;",
+        "    }",
+        f"    content.push({size_t[0]}).map_err(|_| Error::TooSmall)?;",
+        "    if PROTOCOL_VERSION == 2 {",
+        f"        content.push({size_t[1]}).map_err(|_| Error::TooSmall)?;",
+        "    }",
+        "    self.send(id, Instruction::Read, content)?;",
         "    if self.n_recv() == 2 { self.recv::<4>()?; }"
         f"    let params = self.recv::<{size}>()?.params;",
-        f"    Ok(u{size * 8}::from_le_bytes(params))",
+        f"    Ok(u{size * 8}::from_le_bytes(params.into_array().map_err(|_| Error::TooSmall)?))",
         "}",
     ]
     if access == "RW":
         params = ", ".join(f"params[{i}]" for i in range(size))
         lines += [
-            f"fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Self::Error> {{",
-            f"    let params = params.to_le_bytes();",
-            "    if PROTOCOL_VERSION == 1 {",
-            f"        self.send(id, Instruction::Write, &[{address[0]}, {params}]);",
-            "    } else {",
-            f"        self.send(id, Instruction::Write, &[{address[0]}, {address[1]}, {params}]);",
+            f"fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Error<Serial>> {{",
+            f"    let mut content : Vec<u8, {2 + size}> = Vec::new();",
+            f"    content.push({address[0]}).map_err(|_| Error::TooSmall)?;",
+            "    if PROTOCOL_VERSION == 2 {",
+            f"        content.push({address[1]}).map_err(|_| Error::TooSmall)?;",
             "    }",
+            "    for byte in params.to_le_bytes() {",
+            "        content.push(byte).map_err(|_| Error::TooSmall)?;",
+            "    }",
+            f"    self.send(id, Instruction::Write, content)?;",
             f"    if self.n_recv() == 2 {{ self.recv::<{ 2 + size }>()?; }}"
             f"    if self.n_recv() >= 1 {{ Ok(Some(self.recv::<{size}>()?)) }} else {{ Ok(None) }}}}",
         ]

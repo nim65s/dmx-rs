@@ -1,4 +1,6 @@
+use core::fmt;
 use embedded_hal::{digital::v2::OutputPin, serial};
+use heapless::Vec;
 
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd)]
@@ -28,11 +30,11 @@ pub struct Controller<Serial, Direction, const PROTOCOL_VERSION: u8> {
     pub n_recv: u8,
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct Response<const PARAMS_SIZE: usize> {
+#[derive(Debug, Clone)]
+pub struct Response<const PARAMS_SIZE: usize = 4> {
     pub packet_id: u8,
     pub length: usize,
-    pub params: [u8; PARAMS_SIZE],
+    pub params: Vec<u8, PARAMS_SIZE>,
     pub error: u8,
 }
 
@@ -41,11 +43,7 @@ where
     Serial: serial::Write<u8> + serial::Read<u8>,
     Direction: OutputPin,
 {
-    pub const fn new(
-        serial: Serial,
-        direction: Direction,
-        n_recv: u8,
-    ) -> Self {
+    pub const fn new(serial: Serial, direction: Direction, n_recv: u8) -> Self {
         Self {
             serial,
             direction,
@@ -54,15 +52,44 @@ where
     }
 }
 
-pub trait Protocol<const PROTOCOL_VERSION: u8> {
-    type Error;
+pub enum Error<Serial>
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
+    Communication(<Serial as serial::Read<u8>>::Error),
+    TooSmall,
+    CrcError,
+    InstructionReceived,
+}
 
-    fn send(&mut self, id: u8, instruction: Instruction, params: &[u8]);
-    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Self::Error>;
+impl<Serial> fmt::Debug for Error<Serial>
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            Self::Communication(_) => f.write_str("Serial read error"),
+            Self::TooSmall => f.write_str("PARAMS_SIZE too small for this packet"),
+            e => f.write_fmt(format_args!("{e:?}")),
+        }
+    }
+}
+
+pub trait Protocol<Serial, const PROTOCOL_VERSION: u8 = 4>
+where
+    Serial: serial::Write<u8> + serial::Read<u8>,
+{
+    fn send<const PARAMS_SIZE: usize>(
+        &mut self,
+        id: u8,
+        instruction: Instruction,
+        params: Vec<u8, PARAMS_SIZE>,
+    ) -> Result<(), Error<Serial>>;
+    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error<Serial>>;
     fn n_recv(&self) -> u8;
 
-    fn ping(&mut self, id: u8) -> bool {
-        self.send(id, Instruction::Ping, &[]);
-        self.recv::<0>().is_ok()
+    fn ping<const PARAMS_SIZE: usize>(&mut self, id: u8) -> Result<bool, Error<Serial>> {
+        self.send(id, Instruction::Ping, Vec::<u8, PARAMS_SIZE>::new())?;
+        Ok(self.recv::<PARAMS_SIZE>().is_ok())
     }
 }
