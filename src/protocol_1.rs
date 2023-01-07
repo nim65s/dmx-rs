@@ -16,11 +16,11 @@ where
     fn n_recv(&self) -> u8 {
         self.n_recv
     }
-    fn send<const PARAMS_SIZE: usize>(
+    fn send<const MAX_PARAMS_SIZE: usize>(
         &mut self,
         id: u8,
         instruction: Instruction,
-        params: Vec<u8, PARAMS_SIZE>,
+        params: Vec<u8, MAX_PARAMS_SIZE>,
     ) -> Result<(), Error<Serial>> {
         let content = [id, (params.len() + 2) as u8, instruction as u8];
         let mut sumcheck = Wrapping(0);
@@ -39,7 +39,9 @@ where
         Ok(())
     }
 
-    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error<Serial>> {
+    fn recv<const MAX_PARAMS_SIZE: usize>(
+        &mut self,
+    ) -> Result<Response<MAX_PARAMS_SIZE>, Error<Serial>> {
         // wait for HEADER
         let mut head = 0;
         loop {
@@ -55,7 +57,7 @@ where
         // read content
         let packet_id: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
         let length: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
-        if usize::from(length) - 2 < PARAMS_SIZE {
+        if usize::from(length) - 2 < MAX_PARAMS_SIZE {
             return Err(Error::TooSmall);
         }
         let error: u8 = block!(self.serial.read()).map_err(Error::Communication)?;

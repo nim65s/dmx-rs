@@ -31,10 +31,10 @@ pub struct Controller<Serial, Direction, const PROTOCOL_VERSION: u8> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Response<const PARAMS_SIZE: usize = 4> {
+pub struct Response<const MAX_PARAMS_SIZE: usize = 4> {
     pub packet_id: u8,
     pub length: usize,
-    pub params: Vec<u8, PARAMS_SIZE>,
+    pub params: Vec<u8, MAX_PARAMS_SIZE>,
     pub error: u8,
 }
 
@@ -69,7 +69,7 @@ where
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
             Self::Communication(_) => f.write_str("Serial read error"),
-            Self::TooSmall => f.write_str("PARAMS_SIZE too small for this packet"),
+            Self::TooSmall => f.write_str("MAX_PARAMS_SIZE too small for this packet"),
             e => f.write_fmt(format_args!("{e:?}")),
         }
     }
@@ -79,13 +79,15 @@ pub trait Protocol<Serial, const PROTOCOL_VERSION: u8 = 4>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
 {
-    fn send<const PARAMS_SIZE: usize>(
+    fn send<const MAX_PARAMS_SIZE: usize>(
         &mut self,
         id: u8,
         instruction: Instruction,
-        params: Vec<u8, PARAMS_SIZE>,
+        params: Vec<u8, MAX_PARAMS_SIZE>,
     ) -> Result<(), Error<Serial>>;
-    fn recv<const PARAMS_SIZE: usize>(&mut self) -> Result<Response<PARAMS_SIZE>, Error<Serial>>;
+    fn recv<const MAX_PARAMS_SIZE: usize>(
+        &mut self,
+    ) -> Result<Response<MAX_PARAMS_SIZE>, Error<Serial>>;
     fn n_recv(&self) -> u8;
 
     fn ping(&mut self, id: u8) -> Result<bool, Error<Serial>> {
