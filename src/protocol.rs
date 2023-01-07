@@ -58,6 +58,7 @@ where
 {
     Communication(<Serial as serial::Read<u8>>::Error),
     TooSmall,
+    TooManyParams,
     CrcError,
     InstructionReceived,
 }
@@ -70,6 +71,7 @@ where
         match &self {
             Self::Communication(_) => f.write_str("Serial read error"),
             Self::TooSmall => f.write_str("MAX_PARAMS_SIZE too small for this packet"),
+            Self::TooManyParams => f.write_str("too many params"),
             e => f.write_fmt(format_args!("{e:?}")),
         }
     }

@@ -1,6 +1,7 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol1>
 
 use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
+use core::convert::TryInto;
 use core::num::Wrapping;
 use embedded_hal::{digital::v2::OutputPin, serial};
 use heapless::Vec;
@@ -22,7 +23,10 @@ where
         instruction: Instruction,
         params: Vec<u8, MAX_PARAMS_SIZE>,
     ) -> Result<(), Error<Serial>> {
-        let content = [id, (params.len() + 2) as u8, instruction as u8];
+        let length = (params.len() + 2)
+            .try_into()
+            .map_err(|_| Error::TooManyParams)?;
+        let content = [id, length, instruction as u8];
         let mut sumcheck = Wrapping(0);
 
         self.direction.set_high().ok();

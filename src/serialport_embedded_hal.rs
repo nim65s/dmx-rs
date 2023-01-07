@@ -65,7 +65,7 @@ impl embedded_hal::serial::Write<u8> for Serial {
     fn write(&mut self, word: u8) -> Result<(), Error> {
         //println!("SEH writing {}", word);
         while self.port.write(&[word]).map_err(from_io)? != 1 {
-            println!("writing {} again", word);
+            println!("writing {word} again");
         }
         Ok(())
     }

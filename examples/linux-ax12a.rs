@@ -14,7 +14,6 @@ use std::{println, thread, time};
 
 use dummy_pin::DummyPin;
 use heapless::Vec;
-use serialport;
 
 use dmx::{
     ax12a::AX12A,

@@ -49,18 +49,14 @@ where
         instruction: Instruction,
         params: Vec<u8, MAX_PARAMS_SIZE>,
     ) -> Result<(), Error<Serial>> {
-        let content = [
-            id,
-            ((params.len() + 3) & 0xFF) as u8,
-            (((params.len() + 3) >> 8) & 0xFF) as u8,
-            instruction as u8,
-        ];
+        let length = (params.len() + 3).to_le_bytes();
+        let content = [id, length[0], length[1], instruction as u8];
         let mut crc = crc16::State::<crc16::BUYPASS>::new();
         crc.update(&HEADER);
         crc.update(&content);
         crc.update(params.as_slice());
-        let crc = crc.get();
-        let crc = [crc as u8, (crc >> 8) as u8];
+        let crc = crc.get().to_le_bytes();
+        let crc = [crc[0], crc[1]];
 
         // send data in half duplex
         self.direction.set_high().ok();
@@ -77,7 +73,9 @@ where
         Ok(())
     }
 
-    fn recv<const MAX_PARAMS_SIZE: usize>(&mut self) -> Result<Response<MAX_PARAMS_SIZE>, Error<Serial>> {
+    fn recv<const MAX_PARAMS_SIZE: usize>(
+        &mut self,
+    ) -> Result<Response<MAX_PARAMS_SIZE>, Error<Serial>> {
         // wait for HEADER
         let mut head = 0;
         loop {
@@ -120,17 +118,16 @@ where
         for &param in params.iter().take(length) {
             crc.update(&[param]);
         }
-        let crc = crc.get();
 
-        if crc as u8 != crcs[0] || (crc >> 8) as u8 != crcs[1] {
-            Err(Error::CrcError)
-        } else {
+        if crc.get().to_le_bytes() == crcs {
             Ok(Response {
                 packet_id,
                 length,
                 params,
                 error,
             })
+        } else {
+            Err(Error::CrcError)
         }
     }
 }
