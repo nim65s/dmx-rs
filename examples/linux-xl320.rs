@@ -31,7 +31,8 @@ fn main() {
     let dummy_pin = DummyPin::new_low();
     let mut dmx = Controller::new_2(serial, dummy_pin, 0);
 
-    dmx.send(id, Instruction::Ping, Vec::<u8, 0>::new()).unwrap();
+    dmx.send(id, Instruction::Ping, Vec::<u8, 0>::new())
+        .unwrap();
     println!("recv: {:?}", dmx.recv::<4>()); // Err Instruction Received
     println!("recv: {:?}", dmx.recv::<4>()); // Ok received response {…}
 

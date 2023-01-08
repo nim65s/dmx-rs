@@ -66,7 +66,11 @@ where
             params.into_array().map_err(|_| Error::TooSmall)?,
         ))
     }
-    fn set_rx64_id(&mut self, id: u8, params: u8) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
+    fn set_rx64_id(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(3).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -621,7 +625,11 @@ where
             params.into_array().map_err(|_| Error::TooSmall)?,
         ))
     }
-    fn set_rx64_led(&mut self, id: u8, params: u8) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
+    fn set_rx64_led(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(25).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -1101,7 +1109,11 @@ where
             params.into_array().map_err(|_| Error::TooSmall)?,
         ))
     }
-    fn set_rx64_lock(&mut self, id: u8, params: u8) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
+    fn set_rx64_lock(
+        &mut self,
+        id: u8,
+        params: u8,
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(47).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {

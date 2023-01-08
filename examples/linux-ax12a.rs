@@ -44,7 +44,8 @@ fn main() {
         id,
         Instruction::Read,
         Vec::<u8, 2>::from_slice(&[36, 2]).unwrap(),
-    ).unwrap();
+    )
+    .unwrap();
     println!("recv: {:?}", dmx.recv::<2>());
     println!("recv: {:?}", dmx.recv::<2>());
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 """
-Generate getters and setters for a dynamixel motor from a control table TSV copy-pasted 
+Generate getters and setters for a dynamixel motor from a control table TSV copy-pasted
 from the documentation website
 """
 
-import csv
 from pathlib import Path
 from subprocess import run
 
@@ -14,7 +13,7 @@ use embedded_hal::{digital::v2::OutputPin, serial};
 use heapless::Vec;
 
 
-pub trait MOTOR<Serial, const PROTOCOL_VERSION: u8>: Protocol<Serial, PROTOCOL_VERSION> 
+pub trait MOTOR<Serial, const PROTOCOL_VERSION: u8>: Protocol<Serial, PROTOCOL_VERSION>
 where
     Serial: serial::Write<u8> + serial::Read<u8>,
 {
@@ -63,8 +62,9 @@ def generate(
     )
     lines = [
         f"/// {description} (initial: {initial_value})",
-        f"fn get_{motor}_{data_name}(&mut self, id: u8) -> Result<u{size * 8}, Error<Serial>> {{",
-        f"    let mut content : Vec<u8, 4> = Vec::new();",
+        f"fn get_{motor}_{data_name}(&mut self, id: u8) -> "
+        f"Result<u{size * 8}, Error<Serial>> {{",
+        "    let mut content : Vec<u8, 4> = Vec::new();",
         f"    content.push({address[0]}).map_err(|_| Error::TooSmall)?;",
         "    if PROTOCOL_VERSION == 2 {",
         f"        content.push({address[1]}).map_err(|_| Error::TooSmall)?;",
@@ -76,13 +76,14 @@ def generate(
         "    self.send(id, Instruction::Read, content)?;",
         "    if self.n_recv() == 2 { self.recv::<4>()?; }"
         f"    let params = self.recv::<{size}>()?.params;",
-        f"    Ok(u{size * 8}::from_le_bytes(params.into_array().map_err(|_| Error::TooSmall)?))",
+        f"    Ok(u{size * 8}::from_le_bytes(params.into_array()"
+        ".map_err(|_| Error::TooSmall)?))",
         "}",
     ]
     if access == "RW":
-        params = ", ".join(f"params[{i}]" for i in range(size))
         lines += [
-            f"fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<StatusPacket<{size}>>, Error<Serial>> {{",
+            f"fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> "
+            f"Result<Option<StatusPacket<{size}>>, Error<Serial>> {{",
             f"    let mut content : Vec<u8, {2 + size}> = Vec::new();",
             f"    content.push({address[0]}).map_err(|_| Error::TooSmall)?;",
             "    if PROTOCOL_VERSION == 2 {",
@@ -91,9 +92,10 @@ def generate(
             "    for byte in params.to_le_bytes() {",
             "        content.push(byte).map_err(|_| Error::TooSmall)?;",
             "    }",
-            f"    self.send(id, Instruction::Write, content)?;",
+            "    self.send(id, Instruction::Write, content)?;",
             f"    if self.n_recv() == 2 {{ self.recv::<{ 2 + size }>()?; }}"
-            f"    if self.n_recv() >= 1 {{ Ok(Some(self.recv::<{size}>()?)) }} else {{ Ok(None) }}}}",
+            f"    if self.n_recv() >= 1 {{ Ok(Some(self.recv::<{size}>()?)) }} "
+            "else { Ok(None) }}",
         ]
     for line in lines:
         print(line, file=out)
