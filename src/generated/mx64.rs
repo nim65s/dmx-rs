@@ -132,7 +132,7 @@ where
             Ok(None)
         }
     }
-    /// StatusPacket Delay Time (initial: 250)
+    /// Response Delay Time (initial: 250)
     fn get_mx64_return_delay_time(&mut self, id: u8) -> Result<u8, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(5).map_err(|_| Error::TooSmall)?;
