@@ -10,6 +10,7 @@ const HEADER: [u8; 4] = [0xFF, 0xFF, 0xFD, 0x00];
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd)]
 pub enum Status {
+    Ok = 0x00,
     ResultFail = 0x01,       // Failed to process the sent Instruction Packet
     InstructionError = 0x02, // Undefined Instruction has been used / Action has been used without Reg Write
     CrcError = 0x03,         // CRC of the sent Packet does not match
@@ -23,6 +24,7 @@ pub enum Status {
 impl From<u8> for Status {
     fn from(val: u8) -> Self {
         match val {
+            0x00 => Self::Ok,
             0x01 => Self::ResultFail,
             0x02 => Self::InstructionError,
             0x03 => Self::CrcError,
@@ -96,16 +98,13 @@ where
         if instruction != Instruction::StatusReturn as u8 {
             return Err(Error::InstructionReceived);
         }
-        let length: usize = length_l as usize + ((length_h as usize) << 8) - 4;
-        if length < MAX_PARAMS_SIZE {
-            return Err(Error::TooSmall);
-        }
+        let length = u16::from_le_bytes([length_l, length_h]);
+        let length = usize::from(length) - 4; // inst + err + crc1 + crc2: 4 bytes.
         let error: u8 = block!(self.serial.read()).map_err(Error::Communication)?;
         let mut params = Vec::new();
         for _ in 0..length {
-            params
-                .push(block!(self.serial.read()).map_err(Error::Communication)?)
-                .map_err(|_| Error::TooSmall)?;
+            let byte = block!(self.serial.read()).map_err(Error::Communication)?;
+            params.push(byte).map_err(|_| Error::TooSmall)?;
         }
         let mut crcs = [0; 2];
         crcs[0] = block!(self.serial.read()).map_err(Error::Communication)?;
@@ -115,16 +114,18 @@ where
         let mut crc = crc16::State::<crc16::BUYPASS>::new();
         crc.update(&HEADER);
         crc.update(&[packet_id, length_l, length_h, instruction, error]);
-        for &param in params.iter().take(length) {
+        for &param in &params {
             crc.update(&[param]);
         }
+        let instruction = Some(instruction.into());
 
         if crc.get().to_le_bytes() == crcs {
             Ok(Response {
                 packet_id,
                 length,
-                params,
+                instruction,
                 error,
+                params,
             })
         } else {
             Err(Error::CrcError)

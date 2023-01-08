@@ -21,6 +21,31 @@ pub enum Instruction {
     BulkRead = 0x92, // For multiple devices, Instruction to read data from different Addresses with different lengths at once
     BulkWrite = 0x93, // For multiple devices, Instruction to write data on different Addresses with different lengths at once
     FastBulkRead = 0x9A, // For multiple devices, Instruction to read data from different Addresses with different lengths at once
+    WrongInstruction = 0xFF,
+}
+
+impl From<u8> for Instruction {
+    fn from(val: u8) -> Self {
+        match val {
+            0x01 => Self::Ping,
+            0x02 => Self::Read,
+            0x03 => Self::Write,
+            0x04 => Self::RegWrite,
+            0x05 => Self::Action,
+            0x06 => Self::FactoryReset,
+            0x08 => Self::Reboot,
+            0x10 => Self::Clear,
+            0x20 => Self::ControlTableBackup,
+            0x55 => Self::StatusReturn,
+            0x82 => Self::SyncRead,
+            0x83 => Self::SyncWrite,
+            0x8A => Self::FastSyncRead,
+            0x92 => Self::BulkRead,
+            0x93 => Self::BulkWrite,
+            0x9A => Self::FastBulkRead,
+            _ => Self::WrongInstruction,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -34,8 +59,9 @@ pub struct Controller<Serial, Direction, const PROTOCOL_VERSION: u8> {
 pub struct Response<const MAX_PARAMS_SIZE: usize = 4> {
     pub packet_id: u8,
     pub length: usize,
-    pub params: Vec<u8, MAX_PARAMS_SIZE>,
+    pub instruction: Option<Instruction>,
     pub error: u8,
+    pub params: Vec<u8, MAX_PARAMS_SIZE>,
 }
 
 impl<Serial, Direction, const PROTOCOL_VERSION: u8> Controller<Serial, Direction, PROTOCOL_VERSION>

@@ -80,11 +80,13 @@ where
 
         if checksum == !(sumcheck.0) {
             let length = length as usize;
+            let instruction = None;
             Ok(Response {
                 packet_id,
                 length,
-                params,
+                instruction,
                 error,
+                params,
             })
         } else {
             Err(Error::CrcError)
