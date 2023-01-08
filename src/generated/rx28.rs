@@ -1,4 +1,4 @@
-use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
+use crate::protocol::{Controller, Error, Instruction, Protocol, StatusPacket};
 use embedded_hal::{digital::v2::OutputPin, serial};
 use heapless::Vec;
 
@@ -66,7 +66,7 @@ where
             params.into_array().map_err(|_| Error::TooSmall)?,
         ))
     }
-    fn set_rx28_id(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error<Serial>> {
+    fn set_rx28_id(&mut self, id: u8, params: u8) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(3).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -109,7 +109,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(4).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -128,7 +128,7 @@ where
             Ok(None)
         }
     }
-    /// Response Delay Time (initial: 250)
+    /// StatusPacket Delay Time (initial: 250)
     fn get_rx28_return_delay_time(&mut self, id: u8) -> Result<u8, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(5).map_err(|_| Error::TooSmall)?;
@@ -152,7 +152,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(5).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -195,7 +195,7 @@ where
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<2>>, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(6).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -238,7 +238,7 @@ where
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<2>>, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(8).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -281,7 +281,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(11).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -324,7 +324,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(12).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -367,7 +367,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(13).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -410,7 +410,7 @@ where
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<2>>, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(14).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -453,7 +453,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(16).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -496,7 +496,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(17).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -539,7 +539,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(18).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -582,7 +582,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(24).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -621,7 +621,7 @@ where
             params.into_array().map_err(|_| Error::TooSmall)?,
         ))
     }
-    fn set_rx28_led(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error<Serial>> {
+    fn set_rx28_led(&mut self, id: u8, params: u8) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(25).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -664,7 +664,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(26).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -707,7 +707,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(27).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -750,7 +750,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(28).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -793,7 +793,7 @@ where
         &mut self,
         id: u8,
         params: u8,
-    ) -> Result<Option<Response<1>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(29).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -836,7 +836,7 @@ where
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<2>>, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(30).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -879,7 +879,7 @@ where
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<2>>, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(32).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -922,7 +922,7 @@ where
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<2>>, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(34).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -1101,7 +1101,7 @@ where
             params.into_array().map_err(|_| Error::TooSmall)?,
         ))
     }
-    fn set_rx28_lock(&mut self, id: u8, params: u8) -> Result<Option<Response<1>>, Error<Serial>> {
+    fn set_rx28_lock(&mut self, id: u8, params: u8) -> Result<Option<StatusPacket<1>>, Error<Serial>> {
         let mut content: Vec<u8, 3> = Vec::new();
         content.push(47).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {
@@ -1144,7 +1144,7 @@ where
         &mut self,
         id: u8,
         params: u16,
-    ) -> Result<Option<Response<2>>, Error<Serial>> {
+    ) -> Result<Option<StatusPacket<2>>, Error<Serial>> {
         let mut content: Vec<u8, 4> = Vec::new();
         content.push(48).map_err(|_| Error::TooSmall)?;
         if PROTOCOL_VERSION == 2 {

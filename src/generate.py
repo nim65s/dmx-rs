@@ -9,7 +9,7 @@ from pathlib import Path
 from subprocess import run
 
 HEAD = """
-use crate::protocol::{Controller, Instruction, Protocol, Response, Error};
+use crate::protocol::{Controller, Instruction, Protocol, StatusPacket, Error};
 use embedded_hal::{digital::v2::OutputPin, serial};
 use heapless::Vec;
 
@@ -82,7 +82,7 @@ def generate(
     if access == "RW":
         params = ", ".join(f"params[{i}]" for i in range(size))
         lines += [
-            f"fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<Response<{size}>>, Error<Serial>> {{",
+            f"fn set_{motor}_{data_name}(&mut self, id: u8, params: u{size * 8}) -> Result<Option<StatusPacket<{size}>>, Error<Serial>> {{",
             f"    let mut content : Vec<u8, {2 + size}> = Vec::new();",
             f"    content.push({address[0]}).map_err(|_| Error::TooSmall)?;",
             "    if PROTOCOL_VERSION == 2 {",

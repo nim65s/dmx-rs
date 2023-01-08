@@ -56,7 +56,7 @@ pub struct Controller<Serial, Direction, const PROTOCOL_VERSION: u8> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Response<const MAX_PARAMS_SIZE: usize = 4> {
+pub struct StatusPacket<const MAX_PARAMS_SIZE: usize = 4> {
     pub packet_id: u8,
     pub length: usize,
     pub instruction: Option<Instruction>,
@@ -115,7 +115,7 @@ where
     ) -> Result<(), Error<Serial>>;
     fn recv<const MAX_PARAMS_SIZE: usize>(
         &mut self,
-    ) -> Result<Response<MAX_PARAMS_SIZE>, Error<Serial>>;
+    ) -> Result<StatusPacket<MAX_PARAMS_SIZE>, Error<Serial>>;
     fn n_recv(&self) -> u8;
 
     fn ping(&mut self, id: u8) -> Result<bool, Error<Serial>> {

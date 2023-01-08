@@ -1,6 +1,6 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol1>
 
-use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
+use crate::protocol::{Controller, Error, Instruction, Protocol, StatusPacket};
 use core::convert::TryInto;
 use core::num::Wrapping;
 use embedded_hal::{digital::v2::OutputPin, serial};
@@ -45,7 +45,7 @@ where
 
     fn recv<const MAX_PARAMS_SIZE: usize>(
         &mut self,
-    ) -> Result<Response<MAX_PARAMS_SIZE>, Error<Serial>> {
+    ) -> Result<StatusPacket<MAX_PARAMS_SIZE>, Error<Serial>> {
         // wait for HEADER
         let mut head = 0;
         loop {
@@ -81,7 +81,7 @@ where
         if checksum == !(sumcheck.0) {
             let length = length as usize;
             let instruction = None;
-            Ok(Response {
+            Ok(StatusPacket {
                 packet_id,
                 length,
                 instruction,

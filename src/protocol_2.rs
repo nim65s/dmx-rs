@@ -1,6 +1,6 @@
 //! ref <https://emanual.robotis.com/docs/en/dxl/protocol2>
 
-use crate::protocol::{Controller, Error, Instruction, Protocol, Response};
+use crate::protocol::{Controller, Error, Instruction, Protocol, StatusPacket};
 use embedded_hal::{digital::v2::OutputPin, serial};
 use heapless::Vec;
 use nb::block;
@@ -77,7 +77,7 @@ where
 
     fn recv<const MAX_PARAMS_SIZE: usize>(
         &mut self,
-    ) -> Result<Response<MAX_PARAMS_SIZE>, Error<Serial>> {
+    ) -> Result<StatusPacket<MAX_PARAMS_SIZE>, Error<Serial>> {
         // wait for HEADER
         let mut head = 0;
         loop {
@@ -120,7 +120,7 @@ where
         let instruction = Some(instruction.into());
 
         if crc.get().to_le_bytes() == crcs {
-            Ok(Response {
+            Ok(StatusPacket {
                 packet_id,
                 length,
                 instruction,
