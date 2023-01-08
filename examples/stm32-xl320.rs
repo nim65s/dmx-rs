@@ -3,8 +3,8 @@
 #![no_main]
 
 /*
- * In this example, we short-circuit RX & TX, and plug this to the DATA half-duplex port.
- * We don't receive sent packets, and that's actually a good thing, but I don't know why.
+ * In this example, we plug only TX to the DATA half-duplex port, so this is write-only,
+ * and the controller is configured to expect 0 Response after set commands
  * A no-op zero-cost Dummy direction pin is provided to the controller.
  *
  * the XL320 has the following configuration: Baudrate: 115_200, device ID: 1
