@@ -5,7 +5,7 @@ authors = ["Guilhem Saurel <guilhem.saurel@laas.fr>"]
 edition = "2018"
 categories = ["embedded", "hardware-support", "no-std", "science::robotics"]
 description = "Rust implementation of the Robotis Dynamixel motor protocol."
-exclude = ["memory.x"]
+exclude = ["memory.x", "emanual"]
 
 [features]
 default = []
