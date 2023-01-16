@@ -1,3 +1,4 @@
 [submodule "emanual"]
 	path = emanual
 	url = git@github.com:ROBOTIS-GIT/emanual.git
+	update = none
