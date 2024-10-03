@@ -93,7 +93,7 @@ def generate(
             "        content.push(byte).map_err(|_| Error::TooSmall)?;",
             "    }",
             "    self.send(id, Instruction::Write, content)?;",
-            f"    if self.n_recv() == 2 {{ self.recv::<{ 2 + size }>()?; }}"
+            f"    if self.n_recv() == 2 {{ self.recv::<{2 + size}>()?; }}"
             f"    if self.n_recv() >= 1 {{ Ok(Some(self.recv::<{size}>()?)) }} "
             "else { Ok(None) }}",
         ]
